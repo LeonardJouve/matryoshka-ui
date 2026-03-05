@@ -42,6 +42,8 @@ type IElement interface {
 	SetColor(color utils.Color) IElement
 	GetX() uint16
 	GetY() uint16
+	When(condition bool, children ...*Element) IElement
+	ForEach(n uint, fn func(index uint) *Element) IElement
 	SetPadding(padding Padding) IElement
 }
 
@@ -112,6 +114,19 @@ func (el *Element) End() *Element {
 	return el
 }
 
+func (el *Element) When(condition bool, children ...*Element) IElement {
+	if condition {
+		el.Children = append(el.Children, children...)
+	}
+	return el
+}
+
+func (el *Element) ForEach(n uint, fn func(index uint) *Element) IElement {
+	for i := range n {
+		el.Children = append(el.Children, fn(i))
+	}
+	return el
+}
 func (el *Element) SetLayout(layout LayoutType) IElement {
 	el.Layout = layout
 	return el
