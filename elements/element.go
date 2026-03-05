@@ -2,13 +2,13 @@ package elements
 
 import (
 	"github.com/LeonardJouve/matryoshka-ui/utils"
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Element struct {
 	Children []*Element
 	Layout   LayoutType
 	Padding  Padding
+	Gap      Gap
 	Width    uint16
 	Height   uint16
 	Color    utils.Color
@@ -35,13 +35,14 @@ type IElement interface {
 	RemoveChild(children ...*Element) IElement
 	GetWidth() uint16
 	GetHeight() uint16
+	SetLayout(layout LayoutType) IElement
 	SetWidth(uint16) IElement
 	SetHeight(uint16) IElement
+	SetGap(gap Gap) IElement
 	SetColor(color utils.Color) IElement
 	GetX() uint16
 	GetY() uint16
 	SetPadding(padding Padding) IElement
-	render()
 }
 
 var idGenerator = utils.NewIDGenerator()
@@ -75,19 +76,44 @@ func (el *Element) End() *Element {
 		crossOffset = el.Padding.left
 	}
 
+	var maxCrossSize uint16 = 0
+
 	for _, child := range el.Children {
 		if el.Layout == LAYOUT_HORIZONTAL {
 			width := child.GetWidth()
+			maxCrossSize = max(maxCrossSize, child.GetHeight())
+
+			// if fixed width and content overflows, increment cross offset
+			if el.Width != 0 && layoutOffset != 0 && layoutOffset+width > el.Width {
+				crossOffset += maxCrossSize + el.Gap.vertical // max height
+				layoutOffset = el.Padding.left
+				maxCrossSize = 0
+			}
+
 			child.X = layoutOffset
 			child.Y = crossOffset
-			layoutOffset += width
+			layoutOffset += width + el.Gap.horizontal
 		} else {
 			height := child.GetHeight()
+			maxCrossSize = max(maxCrossSize, child.GetWidth())
+
+			// if fixed width and content overflows, increment cross offset
+			if el.Height != 0 && layoutOffset != 0 && layoutOffset+height > el.Height {
+				crossOffset += maxCrossSize + el.Gap.horizontal // max height
+				layoutOffset = el.Padding.top
+				maxCrossSize = 0
+			}
+
 			child.Y = layoutOffset
 			child.X = crossOffset
-			layoutOffset += height
+			layoutOffset += height + el.Gap.vertical
 		}
 	}
+	return el
+}
+
+func (el *Element) SetLayout(layout LayoutType) IElement {
+	el.Layout = layout
 	return el
 }
 
@@ -118,6 +144,11 @@ func (el *Element) RemoveChild(elements ...*Element) IElement {
 
 func (el *Element) SetPadding(padding Padding) IElement {
 	el.Padding = padding
+	return el
+}
+
+func (el *Element) SetGap(gap Gap) IElement {
+	el.Gap = gap
 	return el
 }
 
@@ -178,14 +209,4 @@ func (el *Element) GetHeight() uint16 {
 	}
 
 	return height
-}
-
-func (el *Element) render() {
-	rl.DrawRectangle(
-		int32(el.X),
-		int32(el.Y),
-		int32(el.Width),
-		int32(el.Height),
-		rl.NewColor(el.Color.Red, el.Color.Green, el.Color.Blue, 255),
-	)
 }
