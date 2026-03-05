@@ -13,6 +13,7 @@ func main() {
 	rl.InitWindow(int32(width), int32(height), "matryoshka-ui")
 
 	pink := utils.Color{255, 0, 255}
+	blue := utils.Color{0, 0, 255}
 
 	element := elements.NewElement().
 		SetLayout(elements.LAYOUT_VERTICAL).
@@ -24,16 +25,11 @@ func main() {
 			return elements.NewElement().
 				SetWidth(200).
 				SetHeight(200).
+				When(index%2 == 0, func(el *elements.Element) elements.IElement {
+					return el.SetColor(blue)
+				}).
 				End()
 		}).
-		When(true, elements.NewElement().
-			SetWidth(200).
-			SetHeight(200).
-			End()).
-		When(false, elements.NewElement().
-			SetWidth(200).
-			SetHeight(200).
-			End()).
 		End()
 	renderer := renderer.RaylibRenderer{}
 	defer rl.CloseWindow()
