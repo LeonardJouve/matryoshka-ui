@@ -10,32 +10,30 @@ import (
 func main() {
 	var width uint16 = 800
 	var height uint16 = 450
-	rl.InitWindow(int32(width), int32(height), "matryoshka-ui")
+
+	renderer := renderer.NewRaylibRenderer()
 
 	pink := utils.Color{255, 0, 255}
-	blue := utils.Color{0, 0, 255}
-
 	element := elements.NewElement().
-		SetLayout(elements.LAYOUT_VERTICAL).
-		SetWidth(width).SetHeight(height).
-		SetColor(pink).
-		SetGap(elements.NewGap(10, 10)).
-		SetPadding(elements.NewPadding(10, 10, 10, 10)).
-		ForEach(4, func(index uint) *elements.Element {
-			return elements.NewElement().
-				SetWidth(200).
-				SetHeight(200).
-				When(index%2 == 0, func(el *elements.Element) elements.IElement {
-					return el.SetColor(blue)
-				}).
-				End()
-		}).
+		Style(elements.NewStyle().
+			LayoutAxis(elements.LAYOUT_HORIZONTAL).
+			Width(width).Height(height).
+			Color(pink).
+			Gap(elements.NewGap(10, 10)).
+			Padding(elements.NewPadding(10, 10, 10, 10))).
+		Childrens(
+			elements.NewElement().Style(elements.NewStyle().Width(200).Height(200)).End(),
+			elements.NewElement().Style(elements.NewStyle().Width(200).Height(200)).End(),
+			elements.NewElement().Style(elements.NewStyle().Width(200).Height(200)).End(),
+			elements.NewElement().Style(elements.NewStyle().Width(200).Height(200)).End(),
+		).
 		End()
-	renderer := renderer.RaylibRenderer{}
-	defer rl.CloseWindow()
+
+	renderer.InitWindow(int32(width), int32(height), "MaBite")
+	renderer.SetWindowFlag(rl.FlagWindowResizable)
+	defer renderer.CloseWindow()
 
 	rl.SetTargetFPS(60)
-	rl.SetWindowState(rl.FlagWindowResizable)
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()

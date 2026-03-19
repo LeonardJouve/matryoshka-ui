@@ -7,20 +7,38 @@ import (
 )
 
 type Renderer interface {
-	Render()
+	InitWindow(width, height int, name string)
+	CloseWindow()
+	Render(element *elements.Element)
 }
 
 type RaylibRenderer struct {
 }
 
-func newRaylibRenderer() RaylibRenderer {
-	return RaylibRenderer{}
+type RaylibInit struct {
+	width, height int
+	name          string
 }
 
-func (renderer *RaylibRenderer) Render(element *elements.Element) {
-	var el = element
-	renderRectangle(el.GetX(), el.GetY(), el.GetWidth(), el.GetHeight(), el.Color)
-	for _, child := range el.Children {
+func NewRaylibRenderer() *RaylibRenderer {
+	return &RaylibRenderer{}
+}
+
+func (renderer *RaylibRenderer) InitWindow(width, height int32, name string) {
+	rl.InitWindow(width, height, name)
+}
+
+func (renderer *RaylibRenderer) SetWindowFlag(flag uint32) {
+	rl.SetWindowState(flag)
+}
+
+func (renderer *RaylibRenderer) CloseWindow() {
+	rl.CloseWindow()
+}
+
+func (renderer *RaylibRenderer) Render(element elements.End) {
+	renderRectangle(element.X(), element.Y(), element.Width(), element.Height(), element.Color())
+	for _, child := range element.GetChildren() {
 		renderer.Render(child)
 	}
 }
