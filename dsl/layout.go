@@ -1,4 +1,4 @@
-package elements
+package dsl
 
 type Layout struct {
 	Width  uint16

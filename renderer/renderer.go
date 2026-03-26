@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"github.com/LeonardJouve/matryoshka-ui/elements"
+	"github.com/LeonardJouve/matryoshka-ui/dsl"
 	"github.com/LeonardJouve/matryoshka-ui/utils"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -9,7 +9,7 @@ import (
 type Renderer interface {
 	InitWindow(width, height int, name string)
 	CloseWindow()
-	Render(element *elements.Element)
+	Render(element *dsl.Element)
 }
 
 type RaylibRenderer struct {
@@ -36,11 +36,15 @@ func (renderer *RaylibRenderer) CloseWindow() {
 	rl.CloseWindow()
 }
 
-func (renderer *RaylibRenderer) Render(element elements.End) {
+func (renderer *RaylibRenderer) render(element *dsl.Element) {
 	renderRectangle(element.X(), element.Y(), element.Width(), element.Height(), element.Color())
-	for _, child := range element.GetChildren() {
-		renderer.Render(child)
+	for _, child := range element.Children() {
+		renderer.render(child)
 	}
+}
+
+func (renderer *RaylibRenderer) Render(root *dsl.RootS) {
+	renderer.render(root.Element)
 }
 
 func renderRectangle(x uint16, y uint16, width uint16, height uint16, color utils.Color) {
