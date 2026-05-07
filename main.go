@@ -16,6 +16,7 @@ func blueDiv() dsl.ElementModifier {
 		dsl.Width(50),
 		dsl.Height(50),
 		dsl.Color(blue),
+		dsl.Padding(dsl.PaddingVertical(5), dsl.PaddingHorizontal(10)),
 	)
 }
 
@@ -36,6 +37,22 @@ func main() {
 			),
 			dsl.Div(
 				blueDiv(),
+				dsl.Children(
+					dsl.Div(
+						dsl.Style(
+							dsl.Width(60),
+							dsl.Height(25),
+							dsl.Color(pink),
+						),
+					),
+					dsl.Div(
+						dsl.Style(
+							dsl.Width(25),
+							dsl.Height(25),
+							dsl.Color(pink),
+						),
+					),
+				),
 			),
 		),
 		dsl.Style(
@@ -52,7 +69,7 @@ func main() {
 		),
 	))
 
-	renderer.InitWindow(int32(width), int32(height), "MaBite")
+	renderer.InitWindow(int32(width), int32(height), "Testing101")
 	renderer.SetWindowFlag(rl.FlagWindowResizable)
 	defer renderer.CloseWindow()
 
