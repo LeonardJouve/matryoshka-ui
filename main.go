@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/LeonardJouve/matryoshka-ui/dsl"
+	. "github.com/LeonardJouve/matryoshka-ui/dsl"
 	"github.com/LeonardJouve/matryoshka-ui/renderer"
 	"github.com/LeonardJouve/matryoshka-ui/utils"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,12 +11,12 @@ var pink = utils.Color{255, 0, 255}
 var red = utils.Color{255, 0, 0}
 var blue = utils.Color{0, 0, 255}
 
-func blueDiv() dsl.ElementModifier {
-	return dsl.Style(
-		dsl.Width(50),
-		dsl.Height(50),
-		dsl.Color(blue),
-		dsl.Padding(dsl.PaddingVertical(5), dsl.PaddingHorizontal(10)),
+func blueDiv() ElementModifier {
+	return Style(
+		Width(Fixed(400)),
+		Height(Fixed(50)),
+		Color(blue),
+		Padding(PaddingVertical(5), PaddingHorizontal(10)),
 	)
 }
 
@@ -26,45 +26,41 @@ func main() {
 
 	renderer := renderer.NewRaylibRenderer()
 
-	element := dsl.Root(dsl.Div(
-		dsl.Children(
-			dsl.Div(
-				dsl.Style(
-					dsl.Width(50),
-					dsl.Height(50),
-					dsl.Color(pink),
+	element := Root(Div(
+		Children(
+			Div(
+				Style(
+					Width(Grow(1)),
+					Height(Fixed(50)),
+					Color(pink),
 				),
 			),
-			dsl.Div(
+			Div(
 				blueDiv(),
-				dsl.Children(
-					dsl.Div(
-						dsl.Style(
-							dsl.Width(60),
-							dsl.Height(25),
-							dsl.Color(pink),
-						),
-					),
-					dsl.Div(
-						dsl.Style(
-							dsl.Width(25),
-							dsl.Height(25),
-							dsl.Color(pink),
-						),
-					),
+			),
+			Div(
+				blueDiv(),
+			),
+			Div(
+				Style(
+					Width(Grow(2)),
+					Height(Fixed(50)),
+					Color(pink),
 				),
 			),
 		),
-		dsl.Style(
-			dsl.LayoutAxis(dsl.LAYOUT_HORIZONTAL),
-			dsl.Color(red),
-			dsl.Gap(
-				dsl.GapVertical(10),
-				dsl.GapHorizontal(10),
+		Style(
+			LayoutAxis(LAYOUT_HORIZONTAL),
+			Color(red),
+			Width(Fixed(width)),
+			Height(Fixed(200)),
+			Gap(
+				GapVertical(10),
+				GapHorizontal(10),
 			),
-			dsl.Padding(
-				dsl.PaddingHorizontal(10),
-				dsl.PaddingVertical(10),
+			Padding(
+				PaddingHorizontal(10),
+				PaddingVertical(10),
 			),
 		),
 	))

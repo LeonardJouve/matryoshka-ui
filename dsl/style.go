@@ -14,11 +14,47 @@ type StyleS struct {
 	color      utils.Color
 	padding    *PaddingS
 	gap        *GapS
-	width      uint16
-	height     uint16
+	width      LayoutSize
+	height     LayoutSize
 }
 
 type StyleModifier = func(style *StyleS)
+
+type LayoutSize interface {
+	isLayoutSize()
+}
+
+type fitS struct{}
+
+func (f fitS) isLayoutSize() {}
+
+func Fit() LayoutSize {
+	return fitS{}
+}
+
+type growS struct {
+	factor uint16
+}
+
+func (g growS) isLayoutSize() {}
+
+func Grow(factor uint16) LayoutSize {
+	return growS{
+		factor: factor,
+	}
+}
+
+type fixedS struct {
+	Size uint16
+}
+
+func Fixed(size uint16) LayoutSize {
+	return fixedS{
+		Size: size,
+	}
+}
+
+func (f fixedS) isLayoutSize() {}
 
 func NewStyle() *StyleS {
 	return &StyleS{
@@ -30,8 +66,8 @@ func NewStyle() *StyleS {
 		},
 		padding: &PaddingS{},
 		gap:     &GapS{},
-		width:   0,
-		height:  0,
+		width:   Fit(),
+		height:  Fit(),
 	}
 }
 
@@ -63,13 +99,13 @@ func Color(color utils.Color) StyleModifier {
 	}
 }
 
-func Width(width uint16) StyleModifier {
+func Width(width LayoutSize) StyleModifier {
 	return func(style *StyleS) {
 		style.width = width
 	}
 }
 
-func Height(height uint16) StyleModifier {
+func Height(height LayoutSize) StyleModifier {
 	return func(style *StyleS) {
 		style.height = height
 	}

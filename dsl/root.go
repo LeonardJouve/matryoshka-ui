@@ -6,7 +6,10 @@ type RootS struct {
 
 func Root(element *Element) *RootS {
 	size(element)
+	// TODO only grow layout axis
+	grow(element)
 	position(element, nil, 0, 0)
+	// TODO grow cross axis
 
 	return &RootS{
 		Element: element,
@@ -59,6 +62,37 @@ func position(element *Element, parent *Element, horizontalOffset uint16, vertic
 	}
 }
 
+func grow(el *Element) {
+	// DFS preordre
+
+	// TODO grow on layout axis instead of width
+	growWidthChildrenAmount := 0
+	var usedWidth uint16 = 0
+	var totalWidthGrowFactor uint32 = 0
+
+	for _, child := range el.Children() {
+		if g, ok := child.style.width.(growS); ok {
+			growWidthChildrenAmount += 1
+			totalWidthGrowFactor += uint32(g.factor)
+		}
+		usedWidth += child.Width()
+	}
+
+	gap := uint16(len(el.Children())-1) * el.style.gap.horizontal
+	leftWidth := int32(el.Width()) - int32(usedWidth+el.style.padding.left+el.style.padding.right+gap)
+	if leftWidth > 0 {
+		for _, child := range el.Children() {
+			if g, ok := child.style.width.(growS); ok {
+				child.layout.Width += uint16(float64(leftWidth) * float64(g.factor) / float64(totalWidthGrowFactor))
+			}
+		}
+	}
+
+	for _, child := range el.Children() {
+		grow(child)
+	}
+}
+
 func size(el *Element) {
 	//DFS postordre
 	for _, child := range el.Children() {
@@ -89,14 +123,14 @@ func size(el *Element) {
 		width += maxCrossSize
 	}
 
-	if el.style.width != 0 {
-		el.layout.Width = el.style.width
+	if layoutSize, ok := el.style.width.(fixedS); ok {
+		el.layout.Width = layoutSize.Size
 	} else {
 		el.layout.Width = width
 	}
 
-	if el.style.height != 0 {
-		el.layout.Height = el.style.height
+	if layoutSize, ok := el.style.height.(fixedS); ok {
+		el.layout.Height = layoutSize.Size
 	} else {
 		el.layout.Height = height
 	}
