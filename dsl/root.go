@@ -65,25 +65,45 @@ func position(element *Element, parent *Element, horizontalOffset uint16, vertic
 func grow(el *Element) {
 	// DFS preordre
 
-	// TODO grow on layout axis instead of width
-	growWidthChildrenAmount := 0
-	var usedWidth uint16 = 0
-	var totalWidthGrowFactor uint32 = 0
+	growChildrenAmount := 0
+	var used uint16 = 0
+	var totalGrowFactor uint32 = 0
 
 	for _, child := range el.Children() {
-		if g, ok := child.style.width.(growS); ok {
-			growWidthChildrenAmount += 1
-			totalWidthGrowFactor += uint32(g.factor)
+		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
+			if g, ok := child.style.width.(growS); ok {
+				growChildrenAmount += 1
+				totalGrowFactor += uint32(g.factor)
+			}
+			used += child.Width()
+		} else {
+			if g, ok := child.style.height.(growS); ok {
+				growChildrenAmount += 1
+				totalGrowFactor += uint32(g.factor)
+			}
+			used += child.Height()
 		}
-		usedWidth += child.Width()
 	}
 
-	gap := uint16(len(el.Children())-1) * el.style.gap.horizontal
-	leftWidth := int32(el.Width()) - int32(usedWidth+el.style.padding.left+el.style.padding.right+gap)
-	if leftWidth > 0 {
+	var left int32
+	if el.style.layoutAxis == LAYOUT_HORIZONTAL {
+		gap := uint16(len(el.Children())-1) * el.style.gap.horizontal
+		left = int32(el.Width()) - int32(used+el.style.padding.left+el.style.padding.right+gap)
+	} else {
+		gap := uint16(len(el.Children())-1) * el.style.gap.vertical
+		left = int32(el.Height()) - int32(used+el.style.padding.top+el.style.padding.bottom+gap)
+	}
+
+	if left > 0 {
 		for _, child := range el.Children() {
-			if g, ok := child.style.width.(growS); ok {
-				child.layout.Width += uint16(float64(leftWidth) * float64(g.factor) / float64(totalWidthGrowFactor))
+			if el.style.layoutAxis == LAYOUT_HORIZONTAL {
+				if g, ok := child.style.width.(growS); ok {
+					child.layout.Width += uint16(float64(left) * float64(g.factor) / float64(totalGrowFactor))
+				}
+			} else {
+				if g, ok := child.style.height.(growS); ok {
+					child.layout.Height += uint16(float64(left) * float64(g.factor) / float64(totalGrowFactor))
+				}
 			}
 		}
 	}
