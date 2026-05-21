@@ -10,14 +10,22 @@ import (
 var pink = utils.Color{255, 0, 255}
 var red = utils.Color{255, 0, 0}
 var blue = utils.Color{0, 0, 255}
+var white = utils.Color{0, 0, 255}
 
 func blueDiv() ElementModifier {
 	return Style(
-		Width(Fixed(400)),
+		Width(Fixed(50)),
 		Height(Fixed(50)),
 		Color(blue),
 		Padding(PaddingVertical(5), PaddingHorizontal(10)),
 	)
+}
+
+func whiteDiv() ElementModifier {
+	return Style(
+		Width(Fixed(50)),
+		Height(Fixed(50)),
+		Color(red))
 }
 
 func main() {
@@ -34,19 +42,17 @@ func main() {
 					Height(Fixed(50)),
 					Color(pink),
 				),
-			),
-			Div(
-				blueDiv(),
-			),
-			Div(
-				blueDiv(),
-			),
-			Div(
-				Style(
-					Width(Grow(2)),
-					Height(Fixed(50)),
-					Color(pink),
+				Children(
+					Div(
+						Style(
+							Width(Fixed(50)),
+							Height(Fixed(50)),
+						),
+					),
 				),
+			),
+			Div(
+				blueDiv(),
 			),
 		),
 		Style(

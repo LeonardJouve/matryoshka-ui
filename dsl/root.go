@@ -34,23 +34,27 @@ func position(element *Element, parent *Element, horizontalOffset uint16, vertic
 	var maxWidthChild uint16 = 0
 	var maxHeightChild uint16 = 0
 
+	var line uint16 = 0
 	for _, child := range element.Children() {
-
 		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
-			if horizontalOffset+child.Width() >= element.X()+element.Width() {
+			if line != child.layout.Line {
+				line += 1
+				verticalOffset += maxHeightChild + element.style.gap.vertical
 				horizontalOffset = element.X() + element.style.padding.left
-				verticalOffset += element.style.gap.vertical + maxHeightChild
+				maxHeightChild = 0
 			}
+			maxHeightChild = max(maxHeightChild, child.layout.Height)
 		} else {
-			if verticalOffset+child.Height() >= element.Y()+element.Height() {
+			if line != child.layout.Line {
+				line += 1
+				horizontalOffset += maxWidthChild + element.style.gap.horizontal
 				verticalOffset = element.Y() + element.style.padding.top
-				horizontalOffset += element.style.gap.horizontal + maxWidthChild
+				maxWidthChild = 0
 			}
+			maxWidthChild = max(maxWidthChild, child.layout.Width)
 		}
 
 		position(child, element, horizontalOffset, verticalOffset)
-		maxWidthChild = max(maxWidthChild, child.Width())
-		maxHeightChild = max(maxHeightChild, child.Height())
 
 		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
 			horizontalOffset += child.layout.Width
