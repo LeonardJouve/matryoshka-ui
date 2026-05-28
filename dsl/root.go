@@ -84,11 +84,11 @@ func grow(el *Element) {
 		}
 		childLine := lines[child.layout.Line]
 
-		if g, ok := child.style.layoutAxisSize().(growS); ok {
+		if g, ok := child.style.axisSize(el.style.layoutAxis).(growS); ok {
 			childLine.TotalFactor += uint32(g.factor)
 		}
 		childLine.ChildrenAmount += 1
-		childLine.Used += child.layoutAxisSize()
+		childLine.Used += child.axisSize(el.style.layoutAxis)
 	}
 
 	for _, child := range el.Children() {
@@ -99,8 +99,8 @@ func grow(el *Element) {
 		padding := el.style.layoutAxisPadding()
 		left = int32(el.layoutAxisSize()) - int32(line.Used+padding.start+padding.end+gap)
 
-		if g, ok := child.style.layoutAxisSize().(growS); ok {
-			child.layoutAxisSet(child.layoutAxisSize() + uint16(float64(left)*float64(g.factor)/float64(line.TotalFactor)))
+		if g, ok := child.style.axisSize(el.style.layoutAxis).(growS); ok {
+			child.axisSizeSet(el.style.layoutAxis, child.axisSize(el.style.layoutAxis)+uint16(float64(left)*float64(g.factor)/float64(line.TotalFactor)))
 		}
 	}
 

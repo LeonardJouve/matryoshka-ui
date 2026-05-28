@@ -127,6 +127,14 @@ func (s *StyleS) crossAxisSize() LayoutSize {
 	return s.width
 }
 
+func (s *StyleS) axisSize(layout LayoutAxisT) LayoutSize {
+	if layout == LAYOUT_HORIZONTAL {
+		return s.width
+	}
+
+	return s.height
+}
+
 func (s *StyleS) layoutAxisGap() uint16 {
 	if s.layoutAxis == LAYOUT_HORIZONTAL {
 		return s.gap.horizontal
