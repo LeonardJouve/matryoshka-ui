@@ -30,298 +30,47 @@ func buildUI(width, height int32) *RootS {
 	w := uint16(width)
 	h := uint16(height)
 
-	accent := utils.Color{99, 102, 241}  // indigo
-	surface := utils.Color{24, 24, 27}   // zinc-900
-	card := utils.Color{39, 39, 42}      // zinc-800
-	cardLight := utils.Color{52, 52, 56} // zinc-700
-	green := utils.Color{34, 197, 94}    // green-500
-	amber := utils.Color{251, 191, 36}   // amber-400
-	red := utils.Color{239, 68, 68}      // red-500
-	white := utils.Color{250, 250, 250}
+	accent := utils.Color{99, 102, 241}
+	surface := utils.Color{24, 24, 27}
+	card := utils.Color{230, 39, 42}
+	green := utils.Color{34, 197, 94}
+	amber := utils.Color{251, 191, 36}
+	red := utils.Color{239, 68, 68}
+	pink := utils.Color{236, 72, 153}
+	teal := utils.Color{20, 184, 166}
 
-	_ = white
+	colors := []utils.Color{accent, green, amber, red, pink, teal}
 
-	pill := func(color utils.Color) *Element {
-		return Div(Style(
-			Width(Fixed(8)),
-			Height(Fixed(8)),
-			Color(color),
+	tags := make([]*Element, 12)
+	for i := range tags {
+		tags[i] = Div(Style(
+			Width(Fixed(80)),
+			Height(Fixed(40)),
+			Color(colors[i%len(colors)]),
 		))
-	}
-
-	menuItem := func(active bool) *Element {
-		color := cardLight
-		if active {
-			color = accent
-		}
-		return Div(Style(
-			LayoutAxis(LAYOUT_HORIZONTAL),
-			Width(Grow(1)),
-			Height(Fixed(36)),
-			Color(color),
-			Padding(PaddingHorizontal(12), PaddingVertical(4)),
-			Gap(GapHorizontal(8)),
-		), Children(
-			Div(Style(Width(Fixed(16)), Height(Grow(1)), Color(cardLight))),
-			Div(Style(Width(Grow(1)), Height(Fixed(10)), Color(cardLight))),
-		))
-	}
-
-	statCard := func(color utils.Color) *Element {
-		return Div(
-			Style(
-				LayoutAxis(LAYOUT_VERTICAL),
-				Width(Grow(1)),
-				Height(Grow(1)),
-				Color(card),
-				Padding(PaddingHorizontal(16), PaddingVertical(12)),
-				Gap(GapVertical(8)),
-			),
-			Children(
-				Div(Style(
-					LayoutAxis(LAYOUT_HORIZONTAL),
-					Width(Grow(1)),
-					Height(Fixed(12)),
-					Color(card),
-					Gap(GapHorizontal(6)),
-				), Children(
-					pill(color),
-					Div(Style(Width(Fixed(60)), Height(Grow(1)), Color(cardLight))),
-				)),
-				Div(Style(Width(Fixed(80)), Height(Fixed(20)), Color(white))),
-				Div(Style(Width(Fixed(50)), Height(Fixed(8)), Color(cardLight))),
-			),
-		)
-	}
-
-	tableRow := func(statusColor utils.Color) *Element {
-		return Div(
-			Style(
-				LayoutAxis(LAYOUT_HORIZONTAL),
-				Width(Grow(1)),
-				Height(Fixed(36)),
-				Color(card),
-				Padding(PaddingHorizontal(12), PaddingVertical(8)),
-				Gap(GapHorizontal(12)),
-			),
-			Children(
-				Div(Style(Width(Fixed(24)), Height(Grow(1)), Color(cardLight))),
-				Div(Style(Width(Grow(2)), Height(Fixed(10)), Color(cardLight))),
-				Div(Style(Width(Grow(1)), Height(Fixed(10)), Color(cardLight))),
-				pill(statusColor),
-				Div(Style(Width(Fixed(48)), Height(Fixed(10)), Color(cardLight))),
-			),
-		)
-	}
-
-	chartBar := func(heightPct uint16, color utils.Color) *Element {
-		barH := uint16(120) * heightPct / 100
-		return Div(
-			Style(
-				LayoutAxis(LAYOUT_VERTICAL),
-				Width(Grow(1)),
-				Height(Fixed(120)),
-				Color(card),
-				Gap(GapVertical(0)),
-			),
-			Children(
-				Div(Style(Width(Grow(1)), Height(Fixed(120-barH)), Color(card))),
-				Div(Style(Width(Grow(1)), Height(Fixed(barH)), Color(color))),
-			),
-		)
 	}
 
 	return Root(Div(
 		Style(
-			LayoutAxis(LAYOUT_HORIZONTAL),
+			LayoutAxis(LAYOUT_VERTICAL),
 			Width(Fixed(w)),
 			Height(Fixed(h)),
 			Color(surface),
+			Padding(PaddingHorizontal(32), PaddingVertical(32)),
+			Gap(GapVertical(16)),
 		),
 		Children(
-			// sidebar
+			// container FIT — sa hauteur grandit quand les tags wrappent
 			Div(
 				Style(
 					LayoutAxis(LAYOUT_VERTICAL),
-					Width(Fixed(220)),
-					Height(Grow(1)),
+					Width(Fixed(w-100)),
+					Height(Fit()),
 					Color(card),
-					Padding(PaddingHorizontal(12), PaddingVertical(16)),
-					Gap(GapVertical(4)),
+					Padding(PaddingHorizontal(12), PaddingVertical(12)),
+					Gap(GapHorizontal(8), GapVertical(8)),
 				),
-				Children(
-					// logo
-					Div(Style(
-						LayoutAxis(LAYOUT_HORIZONTAL),
-						Width(Grow(1)),
-						Height(Fixed(32)),
-						Color(card),
-						Padding(PaddingHorizontal(12), PaddingVertical(0)),
-						Gap(GapHorizontal(8)),
-					), Children(
-						Div(Style(Width(Fixed(20)), Height(Fixed(20)), Color(accent))),
-						Div(Style(Width(Fixed(80)), Height(Fixed(12)), Color(white))),
-					)),
-					Div(Style(Width(Grow(1)), Height(Fixed(1)), Color(cardLight))),
-					menuItem(true),
-					menuItem(false),
-					menuItem(false),
-					menuItem(false),
-					menuItem(false),
-					// spacer
-					Div(Style(Width(Grow(1)), Height(Grow(1)), Color(card))),
-					// user
-					Div(Style(
-						LayoutAxis(LAYOUT_HORIZONTAL),
-						Width(Grow(1)),
-						Height(Fixed(40)),
-						Color(cardLight),
-						Padding(PaddingHorizontal(10), PaddingVertical(6)),
-						Gap(GapHorizontal(8)),
-					), Children(
-						Div(Style(Width(Fixed(24)), Height(Fixed(24)), Color(accent))),
-						Div(Style(
-							LayoutAxis(LAYOUT_VERTICAL),
-							Width(Grow(1)),
-							Height(Grow(1)),
-							Color(cardLight),
-							Gap(GapVertical(4)),
-						), Children(
-							Div(Style(Width(Fixed(60)), Height(Fixed(8)), Color(white))),
-							Div(Style(Width(Fixed(80)), Height(Fixed(8)), Color(cardLight))),
-						)),
-					)),
-				),
-			),
-			// main
-			Div(
-				Style(
-					LayoutAxis(LAYOUT_VERTICAL),
-					Width(Grow(1)),
-					Height(Grow(1)),
-					Color(surface),
-					Padding(PaddingHorizontal(24), PaddingVertical(20)),
-					Gap(GapVertical(16)),
-				),
-				Children(
-					// topbar
-					Div(
-						Style(
-							LayoutAxis(LAYOUT_HORIZONTAL),
-							Width(Grow(1)),
-							Height(Fixed(40)),
-							Color(surface),
-							Gap(GapHorizontal(12)),
-						),
-						Children(
-							Div(Style(Width(Grow(1)), Height(Grow(1)), Color(card))),
-							Div(Style(Width(Fixed(36)), Height(Fixed(36)), Color(card))),
-							Div(Style(Width(Fixed(36)), Height(Fixed(36)), Color(accent))),
-						),
-					),
-					// stat cards
-					Div(
-						Style(
-							LayoutAxis(LAYOUT_HORIZONTAL),
-							Width(Grow(1)),
-							Height(Fixed(100)),
-							Color(surface),
-							Gap(GapHorizontal(12)),
-						),
-						Children(
-							statCard(green),
-							statCard(amber),
-							statCard(red),
-							statCard(accent),
-						),
-					),
-					// chart + side panel
-					Div(
-						Style(
-							LayoutAxis(LAYOUT_HORIZONTAL),
-							Width(Grow(1)),
-							Height(Fixed(180)),
-							Color(surface),
-							Gap(GapHorizontal(12)),
-						),
-						Children(
-							// chart
-							Div(
-								Style(
-									LayoutAxis(LAYOUT_VERTICAL),
-									Width(Grow(2)),
-									Height(Grow(1)),
-									Color(card),
-									Padding(PaddingHorizontal(16), PaddingVertical(12)),
-									Gap(GapVertical(8)),
-								),
-								Children(
-									Div(Style(Width(Fixed(100)), Height(Fixed(12)), Color(cardLight))),
-									Div(
-										Style(
-											LayoutAxis(LAYOUT_HORIZONTAL),
-											Width(Grow(1)),
-											Height(Grow(1)),
-											Color(card),
-											Gap(GapHorizontal(4)),
-										),
-										Children(
-											chartBar(40, accent),
-											chartBar(70, accent),
-											chartBar(55, accent),
-											chartBar(90, accent),
-											chartBar(60, accent),
-											chartBar(75, accent),
-											chartBar(85, accent),
-											chartBar(50, accent),
-											chartBar(95, accent),
-											chartBar(65, accent),
-											chartBar(80, accent),
-											chartBar(45, accent),
-										),
-									),
-								),
-							),
-							// side panel
-							Div(
-								Style(
-									LayoutAxis(LAYOUT_VERTICAL),
-									Width(Grow(1)),
-									Height(Grow(1)),
-									Color(card),
-									Padding(PaddingHorizontal(16), PaddingVertical(12)),
-									Gap(GapVertical(10)),
-								),
-								Children(
-									Div(Style(Width(Fixed(80)), Height(Fixed(12)), Color(cardLight))),
-									Div(Style(Width(Grow(1)), Height(Fixed(8)), Color(green))),
-									Div(Style(Width(Grow(1)), Height(Fixed(8)), Color(accent))),
-									Div(Style(Width(Grow(1)), Height(Fixed(8)), Color(amber))),
-									Div(Style(Width(Grow(1)), Height(Fixed(8)), Color(red))),
-								),
-							),
-						),
-					),
-					// table
-					Div(
-						Style(
-							LayoutAxis(LAYOUT_VERTICAL),
-							Width(Grow(1)),
-							Height(Grow(1)),
-							Color(card),
-							Padding(PaddingHorizontal(0), PaddingVertical(0)),
-							Gap(GapVertical(1)),
-						),
-						Children(
-							tableRow(green),
-							tableRow(amber),
-							tableRow(green),
-							tableRow(red),
-							tableRow(green),
-							tableRow(amber),
-						),
-					),
-				),
+				Children(tags...),
 			),
 		),
 	))
