@@ -6,6 +6,7 @@ type RootS struct {
 
 func Root(element *Element) *RootS {
 	size(element)
+	overflow(element)
 	// TODO only grow layout axis
 	grow(element)
 	position(element, nil, 0, 0)
@@ -13,6 +14,37 @@ func Root(element *Element) *RootS {
 
 	return &RootS{
 		Element: element,
+	}
+}
+
+func overflow(element *Element) {
+	// DFS postordre
+	for _, child := range element.children {
+		overflow(child)
+	}
+
+	var width = element.style.padding.left
+	var height = element.style.padding.top
+	var line uint16 = 0
+
+	for _, child := range element.Children() {
+		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
+			if width+child.layout.Width > element.layout.Width {
+				line += 1
+				width = element.style.padding.left + child.layout.Width
+			} else {
+				width += child.layout.Width + element.style.gap.horizontal
+			}
+			child.layout.Line = line
+		} else {
+			if height+child.Height() > element.Height() {
+				line += 1
+				height = element.style.padding.top + child.layout.Height
+			} else {
+				height += child.layout.Height + element.style.gap.vertical
+			}
+			child.layout.Line = line
+		}
 	}
 }
 
@@ -66,48 +98,57 @@ func position(element *Element, parent *Element, horizontalOffset uint16, vertic
 	}
 }
 
+type GrowLine struct {
+	Used           uint16
+	TotalFactor    uint32
+	ChildrenAmount uint16
+}
+
 func grow(el *Element) {
 	// DFS preordre
 
-	growChildrenAmount := 0
-	var used uint16 = 0
-	var totalGrowFactor uint32 = 0
+	lines := map[uint16]*GrowLine{}
 
 	for _, child := range el.Children() {
+		if _, ok := lines[child.layout.Line]; !ok {
+			lines[child.layout.Line] = &GrowLine{}
+		}
+		childLine := lines[child.layout.Line]
+
 		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
 			if g, ok := child.style.width.(growS); ok {
-				growChildrenAmount += 1
-				totalGrowFactor += uint32(g.factor)
+				childLine.TotalFactor += uint32(g.factor)
 			}
-			used += child.Width()
+			childLine.ChildrenAmount += 1
+			childLine.Used += child.Width()
 		} else {
 			if g, ok := child.style.height.(growS); ok {
-				growChildrenAmount += 1
-				totalGrowFactor += uint32(g.factor)
+				childLine.TotalFactor += uint32(g.factor)
 			}
-			used += child.Height()
+			childLine.ChildrenAmount += 1
+			childLine.Used += child.Height()
 		}
 	}
 
-	var left int32
-	if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-		gap := uint16(len(el.Children())-1) * el.style.gap.horizontal
-		left = int32(el.Width()) - int32(used+el.style.padding.left+el.style.padding.right+gap)
-	} else {
-		gap := uint16(len(el.Children())-1) * el.style.gap.vertical
-		left = int32(el.Height()) - int32(used+el.style.padding.top+el.style.padding.bottom+gap)
-	}
+	for _, child := range el.Children() {
+		line := lines[child.layout.Line]
 
-	if left > 0 {
-		for _, child := range el.Children() {
-			if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-				if g, ok := child.style.width.(growS); ok {
-					child.layout.Width += uint16(float64(left) * float64(g.factor) / float64(totalGrowFactor))
-				}
-			} else {
-				if g, ok := child.style.height.(growS); ok {
-					child.layout.Height += uint16(float64(left) * float64(g.factor) / float64(totalGrowFactor))
-				}
+		var left int32
+		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
+			gap := (line.ChildrenAmount-1)*el.style.gap.horizontal - 1
+			left = int32(el.Width()) - int32(line.Used+el.style.padding.left+el.style.padding.right+gap)
+		} else {
+			gap := (line.ChildrenAmount - 1) * el.style.gap.vertical
+			left = int32(el.Height()) - int32(line.Used+el.style.padding.top+el.style.padding.bottom+gap)
+		}
+
+		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
+			if g, ok := child.style.width.(growS); ok {
+				child.layout.Width += uint16(float64(left) * float64(g.factor) / float64(line.TotalFactor))
+			}
+		} else {
+			if g, ok := child.style.height.(growS); ok {
+				child.layout.Height += uint16(float64(left) * float64(g.factor) / float64(line.TotalFactor))
 			}
 		}
 	}
