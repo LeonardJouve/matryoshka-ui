@@ -6,7 +6,7 @@ type RootS struct {
 
 func Root(element *Element) *RootS {
 	sizeLayout(element)
-	constraint(element, element.layoutAxisSize())
+	constraint(element, element.layoutAxisSize(), element.crossAxisSize())
 	overflow(element)
 	grow(element)
 	sizeCross(element)
@@ -172,13 +172,18 @@ func sizeLayout(el *Element) {
 	el.layoutAxisSet(size)
 }
 
-func constraint(el *Element, maxSize uint16) {
+func constraint(el *Element, maxLayoutSize uint16, maxCrossSize uint16) {
 	if _, ok := el.style.layoutAxisSize().(fixedS); !ok {
-		el.layoutAxisSet(min(el.layoutAxisSize(), maxSize))
+		el.layoutAxisSet(min(el.layoutAxisSize(), maxLayoutSize))
 	}
 
 	for _, child := range el.Children() {
-		padding := el.style.layoutAxisPadding()
-		constraint(child, el.layoutAxisSize()-padding.start-padding.end)
+		layoutPadding := el.style.layoutAxisPadding()
+		crossPadding := el.style.crossAxisPadding()
+		if child.style.layoutAxis == el.style.layoutAxis {
+			constraint(child, el.layoutAxisSize()-layoutPadding.start-layoutPadding.end, maxCrossSize-crossPadding.start-crossPadding.end)
+		} else {
+			constraint(child, maxCrossSize-crossPadding.start-crossPadding.end, el.layoutAxisSize()-layoutPadding.start-layoutPadding.end)
+		}
 	}
 }

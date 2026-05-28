@@ -25,6 +25,7 @@ func NewRaylibRenderer() *RaylibRenderer {
 }
 
 func (renderer *RaylibRenderer) InitWindow(width, height int32, name string) {
+	rl.SetConfigFlags(rl.FlagWindowHighdpi | rl.FlagWindowUndecorated | rl.FlagBorderlessWindowedMode)
 	rl.InitWindow(width, height, name)
 }
 

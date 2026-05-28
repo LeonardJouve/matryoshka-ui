@@ -13,7 +13,8 @@ func buildUI(width, height int32) *RootS {
 
 	accent := utils.Color{99, 102, 241}
 	surface := utils.Color{24, 24, 27}
-	card := utils.Color{150, 39, 150}
+	card := utils.Color{180, 39, 140}
+	cardLight := utils.Color{52, 52, 56}
 	green := utils.Color{34, 197, 94}
 	amber := utils.Color{251, 191, 36}
 	red := utils.Color{239, 68, 68}
@@ -22,21 +23,27 @@ func buildUI(width, height int32) *RootS {
 
 	colors := []utils.Color{accent, green, amber, red, pink, teal}
 
-	// row horizontale qui wrap
-	makeRow := func(n int, tagH uint16) *Element {
+	makeTag := func(i int, w uint16, h uint16) *Element {
+		return Div(Style(
+			Width(Fixed(w)),
+			Height(Fixed(h)),
+			Color(colors[i%len(colors)]),
+		))
+	}
+
+	makeTags := func(n int, w uint16, h uint16) []*Element {
 		tags := make([]*Element, n)
 		for i := range tags {
-			tags[i] = Div(Style(
-				Width(Fixed(80)),
-				Height(Fixed(tagH)),
-				Color(colors[i%len(colors)]),
-			))
+			tags[i] = makeTag(i, w, h)
 		}
+		return tags
+	}
+
+	makeHRow := func(tags []*Element) *Element {
 		return Div(
 			Style(
 				LayoutAxis(LAYOUT_HORIZONTAL),
-				Width(Fit()),
-				//Width(Grow(1)),
+				Width(Grow(1)),
 				Height(Fit()),
 				Color(card),
 				Padding(PaddingHorizontal(12), PaddingVertical(12)),
@@ -46,21 +53,12 @@ func buildUI(width, height int32) *RootS {
 		)
 	}
 
-	// colonne verticale qui wrap
-	_ = func(n int, tagW uint16) *Element {
-		tags := make([]*Element, n)
-		for i := range tags {
-			tags[i] = Div(Style(
-				Width(Fixed(tagW)),
-				Height(Fixed(60)),
-				Color(colors[(i+2)%len(colors)]),
-			))
-		}
+	makeVCol := func(tags []*Element, h uint16) *Element {
 		return Div(
 			Style(
 				LayoutAxis(LAYOUT_VERTICAL),
 				Width(Fit()),
-				Height(Fixed(200)),
+				Height(Fixed(h)),
 				Color(card),
 				Padding(PaddingHorizontal(12), PaddingVertical(12)),
 				Gap(GapHorizontal(8), GapVertical(8)),
@@ -76,12 +74,35 @@ func buildUI(width, height int32) *RootS {
 			Height(Fixed(h)),
 			Color(surface),
 			Padding(PaddingHorizontal(32), PaddingVertical(32)),
-			Gap(GapVertical(16)),
+			Gap(GapVertical(12)),
 		),
 		Children(
-			makeRow(8, 40),
-			//makeCol(6, 80),
-			makeRow(10, 50),
+			// row qui wrappe horizontalement
+			makeHRow(makeTags(8, 80, 40)),
+			// row avec sidebar fixe + contenu wrappable
+			Div(
+				Style(
+					LayoutAxis(LAYOUT_HORIZONTAL),
+					Width(Grow(1)),
+					Height(Fit()),
+					Color(surface),
+					Gap(GapHorizontal(12)),
+				),
+				Children(
+					// sidebar fixe
+					makeVCol(makeTags(4, 100, 50), 300),
+					// contenu qui wrappe
+					makeHRow(makeTags(10, 70, 44)),
+				),
+			),
+			// label
+			Div(Style(
+				Width(Grow(1)),
+				Height(Fixed(4)),
+				Color(cardLight),
+			)),
+			// row qui wrappe avec tags plus grands
+			makeHRow(makeTags(6, 120, 60)),
 		),
 	))
 }
@@ -101,10 +122,10 @@ func main() {
 
 	for !rl.WindowShouldClose() {
 		if element == nil || rl.IsWindowResized() {
-			element = buildUI(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
+			element = buildUI(int32(rl.GetRenderWidth()), int32(rl.GetRenderWidth()))
 		}
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.RayWhite)
+		rl.ClearBackground(rl.Color{R: 24, G: 24, B: 27, A: 255})
 		renderer.Render(element)
 
 		rl.EndDrawing()
