@@ -5,9 +5,11 @@ type RootS struct {
 }
 
 func Root(element *Element) *RootS {
-	size(element)
+	sizeLayout(element)
+	constraint(element, element.layoutAxisSize())
 	overflow(element)
 	grow(element)
+	sizeCross(element)
 	position(element, 0, 0)
 	// TODO grow cross axis
 
@@ -17,7 +19,6 @@ func Root(element *Element) *RootS {
 }
 
 func overflow(element *Element) {
-	// DFS postordre
 	for _, child := range element.Children() {
 		overflow(child)
 	}
@@ -108,43 +109,76 @@ func grow(el *Element) {
 	}
 }
 
-func size(el *Element) {
+func sizeCross(el *Element) {
+	for _, child := range el.Children() {
+		sizeCross(child)
+	}
+	padding := el.style.crossAxisPadding()
+	gap := el.style.crossAxisGap()
+	size := padding.start + padding.end
+
+	var maxLineSize uint16 = 0
+	var line uint16 = 0
+	for _, child := range el.Children() {
+		if child.layout.Line != line {
+			line += 1
+			size += maxLineSize + gap
+			maxLineSize = 0
+		}
+		maxLineSize = max(maxLineSize, child.axisSize(el.style.oppositeAxis()))
+	}
+	size += maxLineSize
+
+	if crossFitSize, ok := el.style.crossAxisSize().(fixedS); ok {
+		el.crossAxisSet(crossFitSize.Size)
+	} else {
+		el.crossAxisSet(size)
+	}
+}
+
+func sizeLayout(el *Element) {
 	//DFS postordre
 	for _, child := range el.Children() {
-		size(child)
+		sizeLayout(child)
 	}
-	// Get Padding for the both Axis Horizontal/Vertical
-	layoutPadding := el.style.layoutAxisPadding()
-	crossPadding := el.style.crossAxisPadding()
-
-	// Init the size for both axis depending on the layout and add padding
-	layoutAxis := layoutPadding.start + layoutPadding.end
-	crossAxis := crossPadding.start + crossPadding.end
-
-	// Iterate every child and add their size to the main axis for this element, Calculate the biggest element on the cross axis for its size
-	var maxCrossSize uint16 = 0
-	for _, child := range el.Children() {
-		layoutAxis += child.axisSize(el.style.layoutAxis)
-		maxCrossSize = max(maxCrossSize, child.axisSize(el.style.oppositeAxis()))
-	}
-
-	// Add the gap size between children to the main axis size
-	if n := len(el.children); n > 1 {
-		layoutAxis += uint16(n-1) * el.style.layoutAxisGap()
-	}
-	// Set the cross axis size
-	crossAxis += maxCrossSize
-
-	// Since there is 3 modes FIXED/FIT/GROW check that if the mode is FIXED we discard the work and set the fix size
-	if layoutSize, ok := el.style.layoutAxisSize().(fixedS); ok {
-		el.layoutAxisSet(layoutSize.Size)
-	} else {
-		el.layoutAxisSet(layoutAxis)
-	}
-
+	// Since there is 3 modes FIXED/FIT/GROW check that if the mode is FIXED we discard the work and set the fix sizeLayout
 	if crossSize, ok := el.style.crossAxisSize().(fixedS); ok {
 		el.crossAxisSet(crossSize.Size)
-	} else {
-		el.crossAxisSet(crossAxis)
+	}
+
+	if layoutSize, ok := el.style.layoutAxisSize().(fixedS); ok {
+		el.layoutAxisSet(layoutSize.Size)
+		return
+	}
+
+	// Get Padding for the layout Axis
+	padding := el.style.layoutAxisPadding()
+
+	// Init the sizeLayout for layout axis depending on the layout and add padding
+	size := padding.start + padding.end
+
+	// Iterate every child and add their sizeLayout to the main axis for this element
+	for _, child := range el.Children() {
+		size += child.axisSize(el.style.layoutAxis)
+	}
+
+	// Add the gap sizeLayout between children to the main axis sizeLayout
+	var gap uint16 = 0
+	if n := len(el.children); n > 1 {
+		gap = uint16(n-1) * el.style.layoutAxisGap()
+	}
+
+	size += gap
+	el.layoutAxisSet(size)
+}
+
+func constraint(el *Element, maxSize uint16) {
+	if _, ok := el.style.layoutAxisSize().(fixedS); !ok {
+		el.layoutAxisSet(min(el.layoutAxisSize(), maxSize))
+	}
+
+	for _, child := range el.Children() {
+		padding := el.style.layoutAxisPadding()
+		constraint(child, el.layoutAxisSize()-padding.start-padding.end)
 	}
 }

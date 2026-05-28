@@ -61,6 +61,15 @@ func (el *Element) axisSize(axis LayoutAxisT) uint16 {
 	return el.Height()
 }
 
+func (el *Element) axisSizeSet(axis LayoutAxisT, size uint16) {
+	if axis == LAYOUT_HORIZONTAL {
+		el.layout.Width = size
+		return
+	}
+
+	el.layout.Height = size
+}
+
 func (el *Element) layoutAxisSet(size uint16) {
 	if el.style.layoutAxis == LAYOUT_HORIZONTAL {
 		el.layout.Width = size

@@ -35,7 +35,8 @@ func buildUI(width, height int32) *RootS {
 		return Div(
 			Style(
 				LayoutAxis(LAYOUT_HORIZONTAL),
-				Width(Grow(1)),
+				Width(Fit()),
+				//Width(Grow(1)),
 				Height(Fit()),
 				Color(card),
 				Padding(PaddingHorizontal(12), PaddingVertical(12)),
@@ -46,7 +47,7 @@ func buildUI(width, height int32) *RootS {
 	}
 
 	// colonne verticale qui wrap
-	makeCol := func(n int, tagW uint16) *Element {
+	_ = func(n int, tagW uint16) *Element {
 		tags := make([]*Element, n)
 		for i := range tags {
 			tags[i] = Div(Style(
@@ -79,7 +80,7 @@ func buildUI(width, height int32) *RootS {
 		),
 		Children(
 			makeRow(8, 40),
-			makeCol(6, 80),
+			//makeCol(6, 80),
 			makeRow(10, 50),
 		),
 	))
