@@ -7,9 +7,8 @@ type RootS struct {
 func Root(element *Element) *RootS {
 	size(element)
 	overflow(element)
-	// TODO only grow layout axis
 	grow(element)
-	position(element, nil, 0, 0)
+	position(element, 0, 0)
 	// TODO grow cross axis
 
 	return &RootS{
@@ -19,82 +18,52 @@ func Root(element *Element) *RootS {
 
 func overflow(element *Element) {
 	// DFS postordre
-	for _, child := range element.children {
+	for _, child := range element.Children() {
 		overflow(child)
 	}
 
-	var width = element.style.padding.left
-	var height = element.style.padding.top
+	padding := element.style.layoutAxisPadding()
+	var layout = padding.start + padding.end
 	var line uint16 = 0
 
 	for _, child := range element.Children() {
-		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
-			if width+child.layout.Width > element.layout.Width {
-				line += 1
-				width = element.style.padding.left + child.layout.Width
-			} else {
-				width += child.layout.Width + element.style.gap.horizontal
-			}
-			child.layout.Line = line
+		childSize := child.axisSize(element.style.layoutAxis)
+		if layout+childSize > element.layoutAxisSize() {
+			line += 1
+			layout = padding.start + padding.end + childSize
 		} else {
-			if height+child.Height() > element.Height() {
-				line += 1
-				height = element.style.padding.top + child.layout.Height
-			} else {
-				height += child.layout.Height + element.style.gap.vertical
-			}
-			child.layout.Line = line
+			layout += childSize + element.style.layoutAxisGap()
 		}
+		child.layout.Line = line
 	}
 }
 
-func position(element *Element, parent *Element, horizontalOffset uint16, verticalOffset uint16) {
-	// DFS preordre
-	// TODO handle overflows
+func position(element *Element, layoutOffset uint16, crossOffset uint16) {
+	element.layoutPositionSet(layoutOffset)
+	element.crossPositionSet(crossOffset)
 
-	if parent == nil {
-		element.layout.X = 0
-		element.layout.Y = 0
-	} else {
-		element.layout.X = horizontalOffset
-		element.layout.Y = verticalOffset
-	}
+	layoutOffset += element.style.layoutAxisPadding().start
+	crossOffset += element.style.crossAxisPadding().start
 
-	horizontalOffset += element.style.padding.left
-	verticalOffset += element.style.padding.top
-
-	var maxWidthChild uint16 = 0
-	var maxHeightChild uint16 = 0
+	var maxCrossChild uint16 = 0
 
 	var line uint16 = 0
 	for _, child := range element.Children() {
-		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
-			if line != child.layout.Line {
-				line += 1
-				verticalOffset += maxHeightChild + element.style.gap.vertical
-				horizontalOffset = element.X() + element.style.padding.left
-				maxHeightChild = 0
-			}
-			maxHeightChild = max(maxHeightChild, child.layout.Height)
+		if line != child.layout.Line {
+			line += 1
+			crossOffset += maxCrossChild + element.style.crossAxisGap()
+			layoutOffset = element.layoutAxisPosition() + element.style.layoutAxisPadding().start
+			maxCrossChild = 0
+		}
+		maxCrossChild = max(maxCrossChild, child.axisSize(element.style.oppositeAxis()))
+
+		if child.style.layoutAxis == element.style.layoutAxis {
+			position(child, layoutOffset, crossOffset)
 		} else {
-			if line != child.layout.Line {
-				line += 1
-				horizontalOffset += maxWidthChild + element.style.gap.horizontal
-				verticalOffset = element.Y() + element.style.padding.top
-				maxWidthChild = 0
-			}
-			maxWidthChild = max(maxWidthChild, child.layout.Width)
+			position(child, crossOffset, layoutOffset)
 		}
 
-		position(child, element, horizontalOffset, verticalOffset)
-
-		if element.style.layoutAxis == LAYOUT_HORIZONTAL {
-			horizontalOffset += child.layout.Width
-			horizontalOffset += element.style.gap.horizontal
-		} else {
-			verticalOffset += child.layout.Height
-			verticalOffset += element.style.gap.vertical
-		}
+		layoutOffset += element.style.layoutAxisGap() + child.axisSize(element.style.layoutAxis)
 	}
 }
 
@@ -106,7 +75,6 @@ type GrowLine struct {
 
 func grow(el *Element) {
 	// DFS preordre
-
 	lines := map[uint16]*GrowLine{}
 
 	for _, child := range el.Children() {
@@ -115,41 +83,23 @@ func grow(el *Element) {
 		}
 		childLine := lines[child.layout.Line]
 
-		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-			if g, ok := child.style.width.(growS); ok {
-				childLine.TotalFactor += uint32(g.factor)
-			}
-			childLine.ChildrenAmount += 1
-			childLine.Used += child.Width()
-		} else {
-			if g, ok := child.style.height.(growS); ok {
-				childLine.TotalFactor += uint32(g.factor)
-			}
-			childLine.ChildrenAmount += 1
-			childLine.Used += child.Height()
+		if g, ok := child.style.layoutAxisSize().(growS); ok {
+			childLine.TotalFactor += uint32(g.factor)
 		}
+		childLine.ChildrenAmount += 1
+		childLine.Used += child.layoutAxisSize()
 	}
 
 	for _, child := range el.Children() {
 		line := lines[child.layout.Line]
 
 		var left int32
-		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-			gap := (line.ChildrenAmount-1)*el.style.gap.horizontal - 1
-			left = int32(el.Width()) - int32(line.Used+el.style.padding.left+el.style.padding.right+gap)
-		} else {
-			gap := (line.ChildrenAmount - 1) * el.style.gap.vertical
-			left = int32(el.Height()) - int32(line.Used+el.style.padding.top+el.style.padding.bottom+gap)
-		}
+		gap := (line.ChildrenAmount - 1) * el.style.layoutAxisGap()
+		padding := el.style.layoutAxisPadding()
+		left = int32(el.layoutAxisSize()) - int32(line.Used+padding.start+padding.end+gap)
 
-		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-			if g, ok := child.style.width.(growS); ok {
-				child.layout.Width += uint16(float64(left) * float64(g.factor) / float64(line.TotalFactor))
-			}
-		} else {
-			if g, ok := child.style.height.(growS); ok {
-				child.layout.Height += uint16(float64(left) * float64(g.factor) / float64(line.TotalFactor))
-			}
+		if g, ok := child.style.layoutAxisSize().(growS); ok {
+			child.layoutAxisSet(child.layoutAxisSize() + uint16(float64(left)*float64(g.factor)/float64(line.TotalFactor)))
 		}
 	}
 
@@ -163,40 +113,38 @@ func size(el *Element) {
 	for _, child := range el.Children() {
 		size(child)
 	}
+	// Get Padding for the both Axis Horizontal/Vertical
+	layoutPadding := el.style.layoutAxisPadding()
+	crossPadding := el.style.crossAxisPadding()
 
-	width := el.style.padding.left + el.style.padding.right
-	height := el.style.padding.top + el.style.padding.bottom
+	// Init the size for both axis depending on the layout and add padding
+	layoutAxis := layoutPadding.start + layoutPadding.end
+	crossAxis := crossPadding.start + crossPadding.end
 
+	// Iterate every child and add their size to the main axis for this element, Calculate the biggest element on the cross axis for its size
 	var maxCrossSize uint16 = 0
-	for _, child := range el.children {
-		if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-			width += child.Width()
-			maxCrossSize = max(maxCrossSize, child.Height())
-		} else {
-			height += child.Height()
-			maxCrossSize = max(maxCrossSize, child.Width())
-		}
+	for _, child := range el.Children() {
+		layoutAxis += child.axisSize(el.style.layoutAxis)
+		maxCrossSize = max(maxCrossSize, child.axisSize(el.style.oppositeAxis()))
 	}
 
-	if el.style.layoutAxis == LAYOUT_HORIZONTAL {
-		gaps := uint16(len(el.children)-1) * el.style.gap.horizontal
-		width += gaps
-		height += maxCrossSize
+	// Add the gap size between children to the main axis size
+	if n := len(el.children); n > 1 {
+		layoutAxis += uint16(n-1) * el.style.layoutAxisGap()
+	}
+	// Set the cross axis size
+	crossAxis += maxCrossSize
+
+	// Since there is 3 modes FIXED/FIT/GROW check that if the mode is FIXED we discard the work and set the fix size
+	if layoutSize, ok := el.style.layoutAxisSize().(fixedS); ok {
+		el.layoutAxisSet(layoutSize.Size)
 	} else {
-		gaps := uint16(len(el.children)-1) * el.style.gap.vertical
-		height += gaps
-		width += maxCrossSize
+		el.layoutAxisSet(layoutAxis)
 	}
 
-	if layoutSize, ok := el.style.width.(fixedS); ok {
-		el.layout.Width = layoutSize.Size
+	if crossSize, ok := el.style.crossAxisSize().(fixedS); ok {
+		el.crossAxisSet(crossSize.Size)
 	} else {
-		el.layout.Width = width
-	}
-
-	if layoutSize, ok := el.style.height.(fixedS); ok {
-		el.layout.Height = layoutSize.Size
-	} else {
-		el.layout.Height = height
+		el.crossAxisSet(crossAxis)
 	}
 }
