@@ -20,6 +20,8 @@ func TestUI(w uint16, h uint16) *Node {
 
 	return Root(Div(
 		Style(
+			Width(Fixed(w)),
+			Height(Fixed(h)),
 			LayoutAxis(LAYOUT_VERTICAL),
 			Padding(PaddingAll(16)),
 			Gap(GapAll(12)),
@@ -44,9 +46,9 @@ func TestUI(w uint16, h uint16) *Node {
 			// ROW 2 — grow 1:2:1 across full width
 			Div(
 				Style(
-					LayoutAxis(LAYOUT_HORIZONTAL),
-					Width(Grow(1)),
-					Height(Fixed(40)),
+					LayoutAxis(LAYOUT_VERTICAL),
+					Width(Grow(40)),
+					Height(Grow(1)),
 					Gap(GapAll(8)),
 					Color(col(40, 50, 70)),
 				),

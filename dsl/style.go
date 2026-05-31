@@ -135,53 +135,47 @@ func (s *StyleS) axisSize(layout LayoutAxisT) LayoutSize {
 	return s.Height
 }
 
-func (s *StyleS) layoutAxisGap() uint16 {
-	if s.LayoutAxis == LAYOUT_HORIZONTAL {
+func (s *StyleS) axisGap(l LayoutAxisT) uint16 {
+	if l == LAYOUT_HORIZONTAL {
 		return s.Gap.horizontal
 	}
 
 	return s.Gap.vertical
 }
 
-func (s *StyleS) crossAxisGap() uint16 {
-	if s.LayoutAxis == LAYOUT_HORIZONTAL {
-		return s.Gap.vertical
-	}
-
-	return s.Gap.horizontal
+func (s *StyleS) layoutAxisGap() uint16 {
+	return s.axisGap(s.LayoutAxis)
 }
 
-type axisPadding struct {
+func (s *StyleS) crossAxisGap() uint16 {
+	return s.axisGap(s.oppositeAxis())
+}
+
+type axisPaddingS struct {
 	start uint16
 	end   uint16
 }
 
-func (s *StyleS) layoutAxisPadding() axisPadding {
-	if s.LayoutAxis == LAYOUT_HORIZONTAL {
-		return axisPadding{
+func (s *StyleS) axisPadding(l LayoutAxisT) axisPaddingS {
+	if l == LAYOUT_HORIZONTAL {
+		return axisPaddingS{
 			start: s.Padding.left,
 			end:   s.Padding.right,
 		}
 	}
 
-	return axisPadding{
+	return axisPaddingS{
 		start: s.Padding.top,
 		end:   s.Padding.bottom,
 	}
 }
 
-func (s *StyleS) crossAxisPadding() axisPadding {
-	if s.LayoutAxis == LAYOUT_HORIZONTAL {
-		return axisPadding{
-			start: s.Padding.top,
-			end:   s.Padding.bottom,
-		}
-	}
+func (s *StyleS) layoutAxisPadding() axisPaddingS {
+	return s.axisPadding(s.LayoutAxis)
+}
 
-	return axisPadding{
-		start: s.Padding.left,
-		end:   s.Padding.right,
-	}
+func (s *StyleS) crossAxisPadding() axisPaddingS {
+	return s.axisPadding(s.oppositeAxis())
 }
 
 func (s *StyleS) oppositeAxis() LayoutAxisT {

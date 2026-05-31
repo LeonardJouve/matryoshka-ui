@@ -9,6 +9,7 @@ func Root(element Element) *Node {
 func layoutEngine(node *Node) {
 	sizing(node)
 	grow(node)
+	growCross(node)
 	position(node, 0, 0)
 }
 
@@ -84,7 +85,7 @@ func grow(node *Node) {
 		used += child.axisSize(node.Style.LayoutAxis)
 	}
 
-	var leftAvailable = node.mainAxisSize() - used
+	var leftAvailable = max(node.mainAxisSize()-used, 0)
 	for _, child := range node.Children {
 		if g, ok := child.Style.axisSize(node.Style.LayoutAxis).(growS); ok {
 			growSize := uint16(float64(leftAvailable) * float64(g.factor) / float64(totalFactor))
@@ -94,5 +95,21 @@ func grow(node *Node) {
 
 	for _, child := range node.Children {
 		grow(child)
+	}
+}
+
+func growCross(node *Node) {
+	// DFS preordre
+	padding := node.Style.crossAxisPadding()
+
+	var leftAvailable = node.crossAxisSize() - (padding.start + padding.end)
+	for _, child := range node.Children {
+		if _, ok := child.Style.axisSize(node.Style.oppositeAxis()).(growS); ok {
+			child.setAxisSize(node.Style.oppositeAxis(), leftAvailable)
+		}
+	}
+
+	for _, child := range node.Children {
+		growCross(child)
 	}
 }
