@@ -16,6 +16,7 @@ type StyleS struct {
 	Gap        *GapS
 	Width      LayoutSize
 	Height     LayoutSize
+	FontSize   uint16
 }
 
 type StyleModifier = func(style *StyleS)
@@ -64,10 +65,11 @@ func NewStyle() *StyleS {
 			Green: 0,
 			Blue:  0,
 		},
-		Padding: &PaddingS{},
-		Gap:     &GapS{},
-		Width:   Fit(),
-		Height:  Fit(),
+		Padding:  &PaddingS{},
+		Gap:      &GapS{},
+		Width:    Fit(),
+		Height:   Fit(),
+		FontSize: 16,
 	}
 }
 

@@ -11,12 +11,12 @@ type ImageAttrs struct {
 
 type ImageOpt func(*ImageS)
 
-func Image(src string, opts ...ImageOpt) ImageS {
-	i := ImageS{Src: src}
+func Image(src string, opts ...ImageOpt) *ImageS {
+	i := ImageS{Src: src, Style: NewStyle()}
 	for _, o := range opts {
 		o(&i)
 	}
-	return i
+	return &i
 }
 
 func (i ImageS) build() *Node {
@@ -26,5 +26,13 @@ func (i ImageS) build() *Node {
 		ImageAttrs: ImageAttrs{
 			Src: i.Src,
 		},
+	}
+}
+
+func ImageStyle(mods ...StyleModifier) ImageOpt {
+	return func(i *ImageS) {
+		for _, m := range mods {
+			m(i.Style)
+		}
 	}
 }

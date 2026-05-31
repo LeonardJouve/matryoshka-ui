@@ -22,6 +22,7 @@ type Node struct {
 
 	DivAttrs
 	ImageAttrs
+	TextAttrs
 }
 
 func (n *Node) setAxisSize(l LayoutAxisT, size uint16) {

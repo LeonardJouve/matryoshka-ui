@@ -1,20 +1,31 @@
 package dsl
 
-func Root(element Element) *Node {
+func Root(element Element, measurer TextMeasurer) *Node {
 	root := element.build()
-	layoutEngine(root)
+	layoutEngine(root, measurer)
 	return root
 }
 
-func layoutEngine(node *Node) {
-	sizing(node)
+func layoutEngine(node *Node, measurer TextMeasurer) {
+	sizing(node, measurer)
 	grow(node)
 	growCross(node)
 	position(node, 0, 0)
 }
 
-func sizing(node *Node) {
+func sizing(node *Node, measurer TextMeasurer) {
 	switch node.Kind {
+	case KindImage:
+		if width, ok := node.Style.Width.(fixedS); ok {
+			node.Layout.Width = width.Size
+		}
+		if height, ok := node.Style.Height.(fixedS); ok {
+			node.Layout.Height = height.Size
+		}
+	case KindText:
+		w, h := measurer.MeasureText(node.TextAttrs.Content, node.Style.FontSize)
+		node.Layout.Width = w
+		node.Layout.Height = h
 	case KindDiv:
 		{
 			padding := node.Style.layoutAxisPadding()
@@ -23,7 +34,7 @@ func sizing(node *Node) {
 			var crossSize uint16 = 0
 
 			for _, child := range node.Children {
-				sizing(child)
+				sizing(child, measurer)
 				mainSize += child.axisSize(node.Style.LayoutAxis)
 				crossSize = max(crossSize, child.axisSize(node.Style.oppositeAxis()))
 			}
