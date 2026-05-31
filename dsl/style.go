@@ -10,12 +10,12 @@ const (
 )
 
 type StyleS struct {
-	layoutAxis LayoutAxisT
-	color      utils.Color
-	padding    *PaddingS
-	gap        *GapS
-	width      LayoutSize
-	height     LayoutSize
+	LayoutAxis LayoutAxisT
+	Color      utils.Color
+	Padding    *PaddingS
+	Gap        *GapS
+	Width      LayoutSize
+	Height     LayoutSize
 }
 
 type StyleModifier = func(style *StyleS)
@@ -58,29 +58,29 @@ func (f fixedS) isLayoutSize() {}
 
 func NewStyle() *StyleS {
 	return &StyleS{
-		layoutAxis: LAYOUT_HORIZONTAL,
-		color: utils.Color{
+		LayoutAxis: LAYOUT_HORIZONTAL,
+		Color: utils.Color{
 			Red:   0,
 			Green: 0,
 			Blue:  0,
 		},
-		padding: &PaddingS{},
-		gap:     &GapS{},
-		width:   Fit(),
-		height:  Fit(),
+		Padding: &PaddingS{},
+		Gap:     &GapS{},
+		Width:   Fit(),
+		Height:  Fit(),
 	}
 }
 
 func LayoutAxis(layoutAxis LayoutAxisT) StyleModifier {
 	return func(style *StyleS) {
-		style.layoutAxis = layoutAxis
+		style.LayoutAxis = layoutAxis
 	}
 }
 
 func Padding(modifiers ...PaddingModifier) StyleModifier {
 	return func(style *StyleS) {
 		for _, modifier := range modifiers {
-			modifier(style.padding)
+			modifier(style.Padding)
 		}
 	}
 }
@@ -88,67 +88,67 @@ func Padding(modifiers ...PaddingModifier) StyleModifier {
 func Gap(modifiers ...GapModifier) StyleModifier {
 	return func(style *StyleS) {
 		for _, modifier := range modifiers {
-			modifier(style.gap)
+			modifier(style.Gap)
 		}
 	}
 }
 
 func Color(color utils.Color) StyleModifier {
 	return func(style *StyleS) {
-		style.color = color
+		style.Color = color
 	}
 }
 
 func Width(width LayoutSize) StyleModifier {
 	return func(style *StyleS) {
-		style.width = width
+		style.Width = width
 	}
 }
 
 func Height(height LayoutSize) StyleModifier {
 	return func(style *StyleS) {
-		style.height = height
+		style.Height = height
 	}
 }
 
 func (s *StyleS) layoutAxisSize() LayoutSize {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
-		return s.width
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
+		return s.Width
 	}
 
-	return s.height
+	return s.Height
 }
 
 func (s *StyleS) crossAxisSize() LayoutSize {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
-		return s.height
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
+		return s.Height
 	}
 
-	return s.width
+	return s.Width
 }
 
 func (s *StyleS) axisSize(layout LayoutAxisT) LayoutSize {
 	if layout == LAYOUT_HORIZONTAL {
-		return s.width
+		return s.Width
 	}
 
-	return s.height
+	return s.Height
 }
 
 func (s *StyleS) layoutAxisGap() uint16 {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
-		return s.gap.horizontal
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
+		return s.Gap.horizontal
 	}
 
-	return s.gap.vertical
+	return s.Gap.vertical
 }
 
 func (s *StyleS) crossAxisGap() uint16 {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
-		return s.gap.vertical
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
+		return s.Gap.vertical
 	}
 
-	return s.gap.horizontal
+	return s.Gap.horizontal
 }
 
 type axisPadding struct {
@@ -157,35 +157,35 @@ type axisPadding struct {
 }
 
 func (s *StyleS) layoutAxisPadding() axisPadding {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
 		return axisPadding{
-			start: s.padding.left,
-			end:   s.padding.right,
+			start: s.Padding.left,
+			end:   s.Padding.right,
 		}
 	}
 
 	return axisPadding{
-		start: s.padding.top,
-		end:   s.padding.bottom,
+		start: s.Padding.top,
+		end:   s.Padding.bottom,
 	}
 }
 
 func (s *StyleS) crossAxisPadding() axisPadding {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
 		return axisPadding{
-			start: s.padding.top,
-			end:   s.padding.bottom,
+			start: s.Padding.top,
+			end:   s.Padding.bottom,
 		}
 	}
 
 	return axisPadding{
-		start: s.padding.left,
-		end:   s.padding.right,
+		start: s.Padding.left,
+		end:   s.Padding.right,
 	}
 }
 
 func (s *StyleS) oppositeAxis() LayoutAxisT {
-	if s.layoutAxis == LAYOUT_HORIZONTAL {
+	if s.LayoutAxis == LAYOUT_HORIZONTAL {
 		return LAYOUT_VERTICAL
 	}
 

@@ -37,15 +37,18 @@ func (renderer *RaylibRenderer) CloseWindow() {
 	rl.CloseWindow()
 }
 
-func (renderer *RaylibRenderer) render(element *dsl.Element) {
-	renderRectangle(element.X(), element.Y(), element.Width(), element.Height(), element.Color())
-	for _, child := range element.Children() {
-		renderer.render(child)
+func (renderer *RaylibRenderer) Render(node *dsl.Node) {
+	switch node.Kind {
+	case dsl.KindDiv:
+		renderer.renderDiv(node)
+		for _, child := range node.DivAttrs.Children {
+			renderer.Render(child)
+		}
 	}
 }
 
-func (renderer *RaylibRenderer) Render(root *dsl.RootS) {
-	renderer.render(root.Element)
+func (renderer *RaylibRenderer) renderDiv(node *dsl.Node) {
+	renderRectangle(node.Layout.X, node.Layout.Y, node.Layout.Width, node.Layout.Height, node.Style.Color)
 }
 
 func renderRectangle(x uint16, y uint16, width uint16, height uint16, color utils.Color) {

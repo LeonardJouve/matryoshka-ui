@@ -1,8 +1,8 @@
-package dsl2
+package dsl
 
 type ImageS struct {
-	Style
-	Src string
+	Style *StyleS
+	Src   string
 }
 
 type ImageAttrs struct {
@@ -20,5 +20,11 @@ func Image(src string, opts ...ImageOpt) ImageS {
 }
 
 func (i ImageS) build() *Node {
-	return &Node{Kind: KindImage, Style: i.Style, ImageAttrs: ImageAttrs{Src: i.Src}}
+	return &Node{
+		Kind:  KindImage,
+		Style: i.Style,
+		ImageAttrs: ImageAttrs{
+			Src: i.Src,
+		},
+	}
 }

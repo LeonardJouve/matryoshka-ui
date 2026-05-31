@@ -18,3 +18,10 @@ func GapHorizontal(horizontal uint16) GapModifier {
 		gap.horizontal = horizontal
 	}
 }
+
+func GapAll(g uint16) GapModifier {
+	return func(gap *GapS) {
+		GapHorizontal(g)(gap)
+		GapVertical(g)(gap)
+	}
+}
