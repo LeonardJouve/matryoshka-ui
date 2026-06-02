@@ -5,7 +5,7 @@ import (
 )
 
 type Renderer interface {
-	InitWindow(width, height int, name string)
+	InitWindow(width, height uint16, name string)
 	CloseWindow()
 	Render(element *dsl.Node)
 }

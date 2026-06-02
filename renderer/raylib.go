@@ -9,18 +9,13 @@ import (
 type RaylibRenderer struct {
 }
 
-type RaylibInit struct {
-	width, height int
-	name          string
-}
-
 func NewRaylibRenderer() *RaylibRenderer {
 	return &RaylibRenderer{}
 }
 
-func (renderer *RaylibRenderer) InitWindow(width, height int32, name string) {
+func (renderer *RaylibRenderer) InitWindow(width, height uint16, name string) {
 	rl.SetConfigFlags(rl.FlagWindowHighdpi)
-	rl.InitWindow(width, height, name)
+	rl.InitWindow(int32(width), int32(height), name)
 }
 
 func (renderer *RaylibRenderer) SetWindowFlag(flag uint32) {
@@ -69,11 +64,29 @@ func (renderer *RaylibRenderer) render(node *dsl.Node) {
 }
 
 func (renderer *RaylibRenderer) renderDiv(node *dsl.Node) {
-	renderRectangle(node.Layout.X, node.Layout.Y, node.Layout.Width, node.Layout.Height, node.Style.Color)
+	renderRectangle(node.Layout.X, node.Layout.Y, node.Layout.Width, node.Layout.Height, node.Style.BorderRadius, node.Style.BorderWidth, node.Style.BorderColor, node.Style.Color)
 }
 
-func renderRectangle(x uint16, y uint16, width uint16, height uint16, color utils.Color) {
-	rl.DrawRectangle(int32(x), int32(y), int32(width), int32(height), colorToRL(color))
+func renderRectangle(x uint16, y uint16, width uint16, height uint16, radius float32, borderWidth uint16, borderColor utils.Color, color utils.Color) {
+	rec := rl.NewRectangle(float32(x), float32(y), float32(width), float32(height))
+
+	// fill
+	if radius == 0 {
+		rl.DrawRectanglePro(rec, rl.NewVector2(0, 0), 0, colorToRL(color))
+	} else {
+		rl.DrawRectangleRounded(rec, radius, 16, colorToRL(color))
+	}
+
+	// border
+	if borderWidth > 0 {
+		if radius <= 0 {
+			rl.DrawRectangleLinesEx(rec, float32(borderWidth), colorToRL(borderColor))
+		} else {
+			rl.DrawRectangleRoundedLinesEx(rec, radius, 16, float32(borderWidth), colorToRL(borderColor))
+		}
+	}
+
+	rl.DrawRectangleRounded(rec, radius, 32, colorToRL(color))
 }
 
 func (renderer *RaylibRenderer) MeasureText(content string, fontSize uint16) (uint16, uint16) {
@@ -82,7 +95,7 @@ func (renderer *RaylibRenderer) MeasureText(content string, fontSize uint16) (ui
 }
 
 func colorToRL(color utils.Color) rl.Color {
-	return rl.NewColor(color.Red, color.Green, color.Blue, 255)
+	return rl.NewColor(color.Red, color.Green, color.Blue, color.Alpha)
 }
 
 var textureCache = map[string]rl.Texture2D{}

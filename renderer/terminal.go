@@ -26,7 +26,7 @@ func NewTerminalRenderer() *TerminalRenderer {
 }
 
 // InitWindow creates and initializes the terminal screen.
-func (renderer *TerminalRenderer) InitWindow(width, height int, name string) {
+func (renderer *TerminalRenderer) InitWindow(width uint16, height uint16, name string) {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create screen: %v\n", err)

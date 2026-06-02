@@ -1,5 +1,7 @@
 package dsl
 
+import "github.com/LeonardJouve/matryoshka-ui/utils"
+
 type DivS struct {
 	StyleS *StyleS
 	Kids   []Element
@@ -59,6 +61,26 @@ func Style(modifiers ...DivStyleModifier) DivOpt {
 	}
 }
 
+func BorderRadius(r float32) DivOnly {
+	return func(d *StyleS) {
+		r = max(0, r)
+		r = min(1, r)
+		d.BorderRadius = r
+	}
+}
+
+func BorderWidth(width uint16) DivOnly {
+	return func(d *StyleS) {
+		d.BorderWidth = width
+	}
+}
+
+func BorderColor(c utils.Color) DivOnly {
+	return func(d *StyleS) {
+		d.BorderColor = c
+	}
+}
+
 func LayoutAxis(layoutAxis LayoutAxisT) DivOnly {
 	return func(style *StyleS) {
 		style.LayoutAxis = layoutAxis
@@ -78,5 +100,17 @@ func Gap(modifiers ...GapModifier) DivOnly {
 		for _, modifier := range modifiers {
 			modifier(style.Gap)
 		}
+	}
+}
+
+func Justify(j JustifyT) DivOnly {
+	return func(style *StyleS) {
+		style.Justify = j
+	}
+}
+
+func Align(align AlignT) DivOnly {
+	return func(style *StyleS) {
+		style.Align = align
 	}
 }

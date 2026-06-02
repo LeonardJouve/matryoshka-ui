@@ -9,16 +9,47 @@ const (
 	LAYOUT_VERTICAL
 )
 
+type JustifyT uint16
+
+const (
+	JustifyStart JustifyT = iota
+	JustifyCenter
+	JustifyEnd
+	JustifyBetween
+	JustifyAround
+)
+
+type AlignT uint16
+
+const (
+	AlignStart AlignT = iota
+	AlignCenter
+	AlignEnd
+)
+
+type WrapT int
+
+const (
+	NoWrap WrapT = iota // Default
+	WrapYes
+)
+
 type StyleModifier interface{ applyStyle(*StyleS) }
 
 type StyleS struct {
-	LayoutAxis LayoutAxisT
-	Color      utils.Color
-	Padding    *PaddingS
-	Gap        *GapS
-	Width      LayoutSize
-	Height     LayoutSize
-	FontSize   uint16
+	LayoutAxis   LayoutAxisT
+	Color        utils.Color
+	Padding      *PaddingS
+	Gap          *GapS
+	Width        LayoutSize
+	Height       LayoutSize
+	FontSize     uint16
+	Justify      JustifyT
+	Align        AlignT
+	Wrap         WrapT
+	BorderRadius float32
+	BorderWidth  uint16
+	BorderColor  utils.Color
 }
 
 type LayoutSize interface {
@@ -70,6 +101,8 @@ func NewStyle() *StyleS {
 		Width:    Fit(),
 		Height:   Fit(),
 		FontSize: 16,
+		Justify:  JustifyStart,
+		Align:    AlignStart,
 	}
 }
 
@@ -157,7 +190,7 @@ func (s *StyleS) axisPadding(l LayoutAxisT) axisPaddingS {
 	}
 }
 
-func (s *StyleS) layoutAxisPadding() axisPaddingS {
+func (s *StyleS) mainAxisPadding() axisPaddingS {
 	return s.axisPadding(s.LayoutAxis)
 }
 

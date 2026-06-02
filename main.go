@@ -7,7 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func col(r, g, b uint8) utils.Color { return utils.Color{Red: r, Green: g, Blue: b} }
+func col(r, g, b uint8) utils.Color { return utils.Color{Red: r, Green: g, Blue: b, Alpha: 255} }
 
 func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 	var (
@@ -16,6 +16,7 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 		track = col(45, 50, 75)
 		white = col(235, 238, 248)
 		muted = col(140, 146, 175)
+		green = col(0, 255, 0)
 	)
 
 	iconBtn := func(src string, size uint16) Element {
@@ -27,16 +28,13 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 			Width(Fixed(w)), Height(Fixed(h)),
 			LayoutAxis(LAYOUT_VERTICAL),
 			Color(bg),
+			Justify(JustifyCenter),
 		),
 		Children(
-			Div(Style(Height(Grow(1)))), // top spacer (center vertically)
-
 			Div(
-				Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(420))),
+				Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fit()), Justify(JustifyCenter)),
 				Children(
-					Div(Style(Width(Grow(1)))), // left spacer
-
-					// PLAYER CARD
+					// Player card
 					Div(
 						Style(
 							LayoutAxis(LAYOUT_VERTICAL),
@@ -44,15 +42,16 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 							Padding(PaddingAll(24)),
 							Gap(GapAll(16)),
 							Color(card),
+							BorderRadius(0.1),
+							BorderColor(utils.Color{255, 0, 0, 255}),
+							BorderWidth(1),
 						),
 						Children(
 							// album art — centered, fixed square
 							Div(
-								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(240))),
+								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Justify(JustifyCenter)),
 								Children(
-									Div(Style(Width(Grow(1)))),
 									Image("assets/album.png", ImageStyle(Width(Fixed(240)), Height(Fixed(240)))),
-									Div(Style(Width(Grow(1)))),
 								),
 							),
 
@@ -60,15 +59,15 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 							Text("Midnight City", TextStyle(FontSize(20), Color(white))),
 							Text("M83", TextStyle(Color(muted), FontSize(14))),
 
-							// progress track (full width bar)
-							Div(Style(Width(Grow(1)), Height(Fixed(4)), Color(track))),
-
 							// elapsed / duration row
 							Div(
-								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(14))),
+								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(14)), Gap(GapHorizontal(10)), Justify(JustifyBetween)),
 								Children(
 									Text("1:24", TextStyle(Color(muted), FontSize(12))),
-									Div(Style(Width(Grow(1)))), // spacer pushes duration right
+									Div(
+										Style(Width(Grow(1)), Height(Grow(1)), Color(track), Padding(PaddingAll(4)), BorderRadius(0.8)),
+										Children(Div(Style(Width(Fixed(60)), Height(Grow(1)), Color(green), BorderRadius(0.8)))),
+									),
 									Text("4:03", TextStyle(Color(muted), FontSize(12))),
 								),
 							),
@@ -77,27 +76,21 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 							Div(
 								Style(
 									LayoutAxis(LAYOUT_HORIZONTAL),
-									Width(Grow(1)), Height(Fixed(48)),
-									Gap(GapAll(16)),
+									Width(Grow(1)),
+									Justify(JustifyBetween),
 								),
 								Children(
-									Div(Style(Width(Grow(1)))), // left spacer
 									iconBtn("assets/shuffle.png", 24),
-									iconBtn("assets/prev.png", 36),
-									iconBtn("assets/play.png", 48), // bigger play
-									iconBtn("assets/next.png", 36),
+									iconBtn("assets/prev.png", 24),
+									iconBtn("assets/play.png", 24),
+									iconBtn("assets/next.png", 24),
 									iconBtn("assets/repeat.png", 24),
-									Div(Style(Width(Grow(1)))), // right spacer
 								),
 							),
 						),
 					),
-
-					Div(Style(Width(Grow(1)))), // right spacer
 				),
 			),
-
-			Div(Style(Height(Grow(1)))), // bottom spacer
 		),
 	), measurer)
 }
@@ -106,10 +99,12 @@ func main() {
 	var width uint16 = 800
 	var height uint16 = 800
 	renderer := renderer.NewRaylibRenderer()
+	//renderer := renderer.NewTerminalRenderer()
 
-	renderer.InitWindow(int32(width), int32(height), "Testing101")
+	renderer.InitWindow(width, height, "Testing101")
 	renderer.SetWindowFlag(rl.FlagWindowResizable)
 	defer renderer.CloseWindow()
 
 	renderer.Render(TestUI(uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer))
+	//renderer.Render(TestUI(width, height, renderer))
 }
