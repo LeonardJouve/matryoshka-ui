@@ -9,6 +9,8 @@ const (
 	LAYOUT_VERTICAL
 )
 
+type StyleModifier interface{ applyStyle(*StyleS) }
+
 type StyleS struct {
 	LayoutAxis LayoutAxisT
 	Color      utils.Color
@@ -18,8 +20,6 @@ type StyleS struct {
 	Height     LayoutSize
 	FontSize   uint16
 }
-
-type StyleModifier = func(style *StyleS)
 
 type LayoutSize interface {
 	isLayoutSize()
@@ -73,41 +73,26 @@ func NewStyle() *StyleS {
 	}
 }
 
-func LayoutAxis(layoutAxis LayoutAxisT) StyleModifier {
-	return func(style *StyleS) {
-		style.LayoutAxis = layoutAxis
-	}
-}
+type Shared func(*StyleS)
 
-func Padding(modifiers ...PaddingModifier) StyleModifier {
-	return func(style *StyleS) {
-		for _, modifier := range modifiers {
-			modifier(style.Padding)
-		}
-	}
-}
+func (f Shared) applyStyle(s *StyleS) { f(s) }
+func (f Shared) div()                 {}
+func (f Shared) text()                {}
+func (f Shared) image()               {}
 
-func Gap(modifiers ...GapModifier) StyleModifier {
-	return func(style *StyleS) {
-		for _, modifier := range modifiers {
-			modifier(style.Gap)
-		}
-	}
-}
-
-func Color(color utils.Color) StyleModifier {
+func Color(color utils.Color) Shared {
 	return func(style *StyleS) {
 		style.Color = color
 	}
 }
 
-func Width(width LayoutSize) StyleModifier {
+func Width(width LayoutSize) Shared {
 	return func(style *StyleS) {
 		style.Width = width
 	}
 }
 
-func Height(height LayoutSize) StyleModifier {
+func Height(height LayoutSize) Shared {
 	return func(style *StyleS) {
 		style.Height = height
 	}

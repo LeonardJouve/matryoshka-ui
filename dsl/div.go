@@ -10,6 +10,14 @@ type DivAttrs struct {
 }
 
 type DivOpt func(*DivS)
+type DivStyleModifier interface {
+	StyleModifier
+	div()
+}
+type DivOnly func(*StyleS)
+
+func (f DivOnly) applyStyle(s *StyleS) { f(s) }
+func (f DivOnly) div()                 {}
 
 func Div(opts ...DivOpt) *DivS {
 	d := DivS{
@@ -37,16 +45,38 @@ func (d *DivS) build() *Node {
 	return n
 }
 
-func Style(modifiers ...StyleModifier) DivOpt {
-	return func(s *DivS) {
-		for _, modifier := range modifiers {
-			modifier(s.StyleS)
+func Children(els ...Element) DivOpt {
+	return func(d *DivS) {
+		d.Kids = append(d.Kids, els...)
+	}
+}
+
+func Style(modifiers ...DivStyleModifier) DivOpt {
+	return func(d *DivS) {
+		for _, m := range modifiers {
+			m.applyStyle(d.StyleS)
 		}
 	}
 }
 
-func Children(els ...Element) DivOpt {
-	return func(d *DivS) {
-		d.Kids = append(d.Kids, els...)
+func LayoutAxis(layoutAxis LayoutAxisT) DivOnly {
+	return func(style *StyleS) {
+		style.LayoutAxis = layoutAxis
+	}
+}
+
+func Padding(modifiers ...PaddingModifier) DivOnly {
+	return func(style *StyleS) {
+		for _, modifier := range modifiers {
+			modifier(style.Padding)
+		}
+	}
+}
+
+func Gap(modifiers ...GapModifier) DivOnly {
+	return func(style *StyleS) {
+		for _, modifier := range modifiers {
+			modifier(style.Gap)
+		}
 	}
 }

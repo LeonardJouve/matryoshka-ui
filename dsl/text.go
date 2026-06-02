@@ -1,13 +1,19 @@
 package dsl
 
-import "github.com/LeonardJouve/matryoshka-ui/utils"
-
 type TextS struct {
 	Style   *StyleS
 	Content string
 }
 
 type TextOpt func(*TextS)
+type TextStyleModifier interface {
+	StyleModifier
+	text()
+}
+type TextOnly func(*StyleS)
+
+func (f TextOnly) applyStyle(s *StyleS) { f(s) }
+func (f TextOnly) text()                {}
 
 func Text(content string, opts ...TextOpt) *TextS {
 	t := TextS{Content: content, Style: NewStyle()}
@@ -27,17 +33,20 @@ func (t *TextS) build() *Node {
 	}
 }
 
-func FontSize(size uint16) TextOpt {
+func TextStyle(modifiers ...TextStyleModifier) TextOpt {
 	return func(t *TextS) {
-		t.Style.FontSize = size
-	}
-}
-func TextColor(c utils.Color) TextOpt {
-	return func(t *TextS) {
-		t.Style.Color = c
+		for _, m := range modifiers {
+			m.applyStyle(t.Style)
+		}
 	}
 }
 
 type TextAttrs struct {
 	Content string
+}
+
+func FontSize(size uint16) TextOnly {
+	return func(style *StyleS) {
+		style.FontSize = size
+	}
 }

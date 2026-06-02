@@ -57,8 +57,8 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 							),
 
 							// track title + artist
-							Text("Midnight City", TextColor(white), FontSize(20)),
-							Text("M83", TextColor(muted), FontSize(14)),
+							Text("Midnight City", TextStyle(FontSize(20), Color(white))),
+							Text("M83", TextStyle(Color(muted), FontSize(14))),
 
 							// progress track (full width bar)
 							Div(Style(Width(Grow(1)), Height(Fixed(4)), Color(track))),
@@ -67,9 +67,9 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 							Div(
 								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(14))),
 								Children(
-									Text("1:24", TextColor(muted), FontSize(12)),
+									Text("1:24", TextStyle(Color(muted), FontSize(12))),
 									Div(Style(Width(Grow(1)))), // spacer pushes duration right
-									Text("4:03", TextColor(muted), FontSize(12)),
+									Text("4:03", TextStyle(Color(muted), FontSize(12))),
 								),
 							),
 
@@ -111,13 +111,5 @@ func main() {
 	renderer.SetWindowFlag(rl.FlagWindowResizable)
 	defer renderer.CloseWindow()
 
-	rl.SetTargetFPS(60)
-
-	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.Color{R: 24, G: 24, B: 27, A: 255})
-		renderer.Render(TestUI(uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer))
-
-		rl.EndDrawing()
-	}
+	renderer.Render(TestUI(uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer))
 }

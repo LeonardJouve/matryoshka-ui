@@ -29,10 +29,15 @@ func (i ImageS) build() *Node {
 	}
 }
 
-func ImageStyle(mods ...StyleModifier) ImageOpt {
+type ImageStyleModifier interface {
+	StyleModifier
+	image()
+}
+
+func ImageStyle(modifiers ...ImageStyleModifier) ImageOpt {
 	return func(i *ImageS) {
-		for _, m := range mods {
-			m(i.Style)
+		for _, m := range modifiers {
+			m.applyStyle(i.Style)
 		}
 	}
 }
