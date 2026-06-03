@@ -5,7 +5,6 @@ type Layout struct {
 	Height uint16
 	X      uint16
 	Y      uint16
-	Line   uint16
 }
 
 func NewLayout() Layout {

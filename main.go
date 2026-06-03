@@ -7,127 +7,104 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func buildUI(width, height int32) *RootS {
-	w := uint16(width)
-	h := uint16(height)
+func col(r, g, b uint8) utils.Color { return utils.Color{Red: r, Green: g, Blue: b, Alpha: 255} }
 
-	accent := utils.Color{99, 102, 241}
-	surface := utils.Color{24, 24, 27}
-	card := utils.Color{180, 39, 140}
-	cardLight := utils.Color{52, 52, 56}
-	green := utils.Color{34, 197, 94}
-	amber := utils.Color{251, 191, 36}
-	red := utils.Color{239, 68, 68}
-	pink := utils.Color{236, 72, 153}
-	teal := utils.Color{20, 184, 166}
+func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
+	var (
+		bg    = col(16, 18, 27)
+		card  = col(28, 31, 46)
+		track = col(45, 50, 75)
+		white = col(235, 238, 248)
+		muted = col(140, 146, 175)
+		green = col(0, 255, 0)
+	)
 
-	colors := []utils.Color{accent, green, amber, red, pink, teal}
-
-	makeTag := func(i int, w uint16, h uint16) *Element {
-		return Div(Style(
-			Width(Fixed(w)),
-			Height(Fixed(h)),
-			Color(colors[i%len(colors)]),
-		))
-	}
-
-	makeTags := func(n int, w uint16, h uint16) []*Element {
-		tags := make([]*Element, n)
-		for i := range tags {
-			tags[i] = makeTag(i, w, h)
-		}
-		return tags
-	}
-
-	makeHRow := func(tags []*Element) *Element {
-		return Div(
-			Style(
-				LayoutAxis(LAYOUT_HORIZONTAL),
-				Width(Grow(1)),
-				Height(Fit()),
-				Color(card),
-				Padding(PaddingHorizontal(12), PaddingVertical(12)),
-				Gap(GapHorizontal(8), GapVertical(8)),
-			),
-			Children(tags...),
-		)
-	}
-
-	makeVCol := func(tags []*Element, h uint16) *Element {
-		return Div(
-			Style(
-				LayoutAxis(LAYOUT_VERTICAL),
-				Width(Fit()),
-				Height(Fixed(h)),
-				Color(card),
-				Padding(PaddingHorizontal(12), PaddingVertical(12)),
-				Gap(GapHorizontal(8), GapVertical(8)),
-			),
-			Children(tags...),
-		)
+	iconBtn := func(src string, size uint16) Element {
+		return Image(src, ImageStyle(Width(Fixed(size)), Height(Fixed(size))))
 	}
 
 	return Root(Div(
 		Style(
+			Width(Fixed(w)), Height(Fixed(h)),
 			LayoutAxis(LAYOUT_VERTICAL),
-			Width(Fixed(w)),
-			Height(Fixed(h)),
-			Color(surface),
-			Padding(PaddingHorizontal(32), PaddingVertical(32)),
-			Gap(GapVertical(12)),
+			Color(bg),
+			Justify(JustifyCenter),
 		),
 		Children(
-			// row qui wrappe horizontalement
-			makeHRow(makeTags(8, 80, 40)),
-			// row avec sidebar fixe + contenu wrappable
 			Div(
-				Style(
-					LayoutAxis(LAYOUT_HORIZONTAL),
-					Width(Grow(1)),
-					Height(Fit()),
-					Color(surface),
-					Gap(GapHorizontal(12)),
-				),
+				Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Justify(JustifyCenter)),
 				Children(
-					// sidebar fixe
-					makeVCol(makeTags(4, 100, 50), 300),
-					// contenu qui wrappe
-					makeHRow(makeTags(10, 70, 44)),
+					// Player card
+					Div(
+						Style(
+							LayoutAxis(LAYOUT_VERTICAL),
+							Width(Fixed(300)),
+							Padding(PaddingAll(24)),
+							Gap(GapAll(16)),
+							Color(card),
+							BorderRadius(0.1),
+							BorderColor(utils.Color{255, 0, 0, 255}),
+							BorderWidth(1),
+						),
+						Children(
+							// album art — centered, fixed square
+							Div(
+								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Justify(JustifyCenter)),
+								Children(
+									Image("assets/album.png", ImageStyle(Width(Fixed(240)), Height(Fixed(240)))),
+								),
+							),
+
+							// track title + artist
+							Text("Midnight City", TextStyle(FontSize(20), Color(white))),
+							Text("M83", TextStyle(Color(muted), FontSize(14))),
+
+							// elapsed / duration row
+							Div(
+								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Gap(GapHorizontal(10)), Justify(JustifyBetween), Align(AlignCenter)),
+								Children(
+									Text("1:24", TextStyle(Color(muted), FontSize(12))),
+									Div(
+										Style(Width(Grow(1)), Height(Grow(1)), Color(track), Padding(PaddingAll(4)), BorderRadius(0.8)),
+										Children(Div(Style(Width(Fixed(60)), Height(Fixed(8)), Color(green), BorderRadius(0.8)))),
+									),
+									Text("4:03", TextStyle(Color(muted), FontSize(12))),
+								),
+							),
+
+							// transport controls row — centered group
+							Div(
+								Style(
+									LayoutAxis(LAYOUT_HORIZONTAL),
+									Width(Grow(1)),
+									Justify(JustifyBetween),
+								),
+								Children(
+									iconBtn("assets/shuffle.png", 24),
+									iconBtn("assets/prev.png", 24),
+									iconBtn("assets/play.png", 24),
+									iconBtn("assets/next.png", 24),
+									iconBtn("assets/repeat.png", 24),
+								),
+							),
+						),
+					),
 				),
 			),
-			// label
-			Div(Style(
-				Width(Grow(1)),
-				Height(Fixed(4)),
-				Color(cardLight),
-			)),
-			// row qui wrappe avec tags plus grands
-			makeHRow(makeTags(6, 120, 60)),
 		),
-	))
+	), measurer)
 }
 
 func main() {
 	var width uint16 = 800
 	var height uint16 = 800
 	renderer := renderer.NewRaylibRenderer()
+	//renderer := renderer.NewTerminalRenderer()
 
-	var element *RootS
-
-	renderer.InitWindow(int32(width), int32(height), "Testing101")
+	renderer.InitWindow(width, height, "Testing101")
 	renderer.SetWindowFlag(rl.FlagWindowResizable)
 	defer renderer.CloseWindow()
 
-	rl.SetTargetFPS(60)
-
-	for !rl.WindowShouldClose() {
-		if element == nil || rl.IsWindowResized() {
-			element = buildUI(int32(rl.GetRenderWidth()), int32(rl.GetRenderWidth()))
-		}
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.Color{R: 24, G: 24, B: 27, A: 255})
-		renderer.Render(element)
-
-		rl.EndDrawing()
-	}
+	renderer.Render(TestUI(uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer))
+	//renderer.Render(TestUI(width, height, renderer))
 }

@@ -46,3 +46,10 @@ func PaddingTop(top uint16) PaddingModifier {
 		padding.top = top
 	}
 }
+
+func PaddingAll(p uint16) PaddingModifier {
+	return func(padding *PaddingS) {
+		PaddingVertical(p)(padding)
+		PaddingHorizontal(p)(padding)
+	}
+}

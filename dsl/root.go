@@ -1,189 +1,203 @@
 package dsl
 
-type RootS struct {
-	*Element
+func Root(element Element, measurer TextMeasurer) *Node {
+	root := element.build()
+	layoutEngine(root, measurer)
+	return root
 }
 
-func Root(element *Element) *RootS {
-	sizeLayout(element)
-	constraint(element, element.layoutAxisSize(), element.crossAxisSize())
-	overflow(element)
-	grow(element)
-	sizeCross(element)
-	position(element, 0, 0)
-	// TODO grow cross axis
+func layoutEngine(node *Node, measurer TextMeasurer) {
+	sizing(node, measurer)
+	flex(node)
+	position(node, 0, 0)
+}
 
-	return &RootS{
-		Element: element,
+func sizing(node *Node, measurer TextMeasurer) {
+	switch node.Kind {
+	case KindImage:
+		if width, ok := node.Style.Width.(fixedS); ok {
+			node.Layout.Width = width.Size
+		}
+		if height, ok := node.Style.Height.(fixedS); ok {
+			node.Layout.Height = height.Size
+		}
+	case KindText:
+		w, h := measurer.MeasureText(node.TextAttrs.Content, node.Style.FontSize)
+		node.Layout.Width = w
+		node.Layout.Height = h
+	case KindDiv:
+		{
+			padding := node.Style.mainAxisPadding()
+			paddingCross := node.Style.crossAxisPadding()
+			mainSize := padding.start + padding.end
+			var crossSize uint16 = 0
+
+			for _, child := range node.Children {
+				sizing(child, measurer)
+				mainSize += child.axisSize(node.Style.LayoutAxis)
+				crossSize = max(crossSize, child.axisSize(node.Style.oppositeAxis()))
+			}
+
+			crossSize += paddingCross.start + paddingCross.end
+
+			if n := len(node.Children); n > 1 {
+				mainSize += uint16(n-1) * node.Style.layoutAxisGap()
+			}
+
+			switch size := node.Style.layoutAxisSize().(type) {
+			case fixedS:
+				node.setMainAxisSize(size.Size)
+			default:
+				node.setMainAxisSize(mainSize)
+			}
+
+			switch size := node.Style.crossAxisSize().(type) {
+			case fixedS:
+				node.setCrossAxisSize(size.Size)
+			default:
+				node.setCrossAxisSize(crossSize)
+			}
+		}
 	}
 }
 
-func overflow(element *Element) {
-	for _, child := range element.Children() {
-		overflow(child)
+func position(node *Node, x uint16, y uint16) {
+	node.Layout.X = x
+	node.Layout.Y = y
+
+	px := x + node.Style.Padding.left
+	py := y + node.Style.Padding.top
+
+	mainPadding := node.Style.mainAxisPadding()
+	mainAvailable := node.mainAxisSize() - mainPadding.start - mainPadding.end
+
+	crossPadding := node.Style.crossAxisPadding()
+	crossAvailable := node.crossAxisSize() - crossPadding.start - crossPadding.end
+
+	for _, child := range node.Children {
+		mainAvailable -= child.axisSize(node.Style.LayoutAxis)
 	}
 
-	padding := element.style.layoutAxisPadding()
-	var layout = padding.start + padding.end
-	var line uint16 = 0
+	for i, child := range node.Children {
+		mainOffset, mainGap := justify(node.Style.Justify, mainAvailable, uint16(len(node.Children)))
 
-	for _, child := range element.Children() {
-		childSize := child.axisSize(element.style.layoutAxis)
-		if layout+childSize > element.layoutAxisSize() {
-			line += 1
-			layout = padding.start + padding.end + childSize
+		crossOffset := align(node.Style.Align, crossAvailable-child.axisSize(node.Style.oppositeAxis()))
+		var offsetX, offsetY uint16
+
+		if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
+			if i == 0 {
+				px += mainOffset
+			} else {
+				px += mainGap
+			}
+			offsetY = crossOffset
 		} else {
-			layout += childSize + element.style.layoutAxisGap()
+			if i == 0 {
+				py += mainOffset
+			} else {
+				py += mainGap
+			}
+			offsetX = crossOffset
 		}
-		child.layout.Line = line
-	}
-}
 
-func position(element *Element, layoutOffset uint16, crossOffset uint16) {
-	element.layoutPositionSet(layoutOffset)
-	element.crossPositionSet(crossOffset)
+		position(child, px+offsetX, py+offsetY)
 
-	layoutOffset += element.style.layoutAxisPadding().start
-	crossOffset += element.style.crossAxisPadding().start
+		if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
+			px += child.Layout.Width
 
-	var maxCrossChild uint16 = 0
-
-	var line uint16 = 0
-	for _, child := range element.Children() {
-		if line != child.layout.Line {
-			line += 1
-			crossOffset += maxCrossChild + element.style.crossAxisGap()
-			layoutOffset = element.layoutAxisPosition() + element.style.layoutAxisPadding().start
-			maxCrossChild = 0
-		}
-		maxCrossChild = max(maxCrossChild, child.axisSize(element.style.oppositeAxis()))
-
-		if child.style.layoutAxis == element.style.layoutAxis {
-			position(child, layoutOffset, crossOffset)
+			if node.Style.Justify != JustifyBetween && node.Style.Justify != JustifyAround {
+				px += node.Style.Gap.horizontal
+			}
 		} else {
-			position(child, crossOffset, layoutOffset)
-		}
+			py += child.Layout.Height
 
-		layoutOffset += element.style.layoutAxisGap() + child.axisSize(element.style.layoutAxis)
+			if node.Style.Justify != JustifyBetween && node.Style.Justify != JustifyAround {
+				py += node.Style.Gap.vertical
+			}
+		}
 	}
 }
 
-type GrowLine struct {
-	Used           uint16
-	TotalFactor    uint32
-	ChildrenAmount uint16
-}
+func flex(node *Node) {
+	// grow main
+	var totalFactor uint16 = 0
+	mainPadding := node.Style.mainAxisPadding()
+	used := mainPadding.start + mainPadding.end
 
-func grow(el *Element) {
-	// DFS preordre
-	lines := map[uint16]*GrowLine{}
-
-	for _, child := range el.Children() {
-		if _, ok := lines[child.layout.Line]; !ok {
-			lines[child.layout.Line] = &GrowLine{}
-		}
-		childLine := lines[child.layout.Line]
-
-		if g, ok := child.style.axisSize(el.style.layoutAxis).(growS); ok {
-			childLine.TotalFactor += uint32(g.factor)
-		}
-		childLine.ChildrenAmount += 1
-		childLine.Used += child.axisSize(el.style.layoutAxis)
+	if n := len(node.Children); n > 1 {
+		used += uint16(n-1) * node.Style.layoutAxisGap()
 	}
 
-	for _, child := range el.Children() {
-		line := lines[child.layout.Line]
+	for _, child := range node.Children {
+		if g, ok := child.Style.axisSize(node.Style.LayoutAxis).(growS); ok {
+			totalFactor += g.factor
+		}
+		used += child.axisSize(node.Style.LayoutAxis)
+	}
 
-		var left int32
-		gap := (line.ChildrenAmount - 1) * el.style.layoutAxisGap()
-		padding := el.style.layoutAxisPadding()
-		left = int32(el.layoutAxisSize()) - int32(line.Used+padding.start+padding.end+gap)
+	var leftAvailable uint16 = 0
+	if node.mainAxisSize() > used {
+		leftAvailable = node.mainAxisSize() - used
+	}
 
-		if g, ok := child.style.axisSize(el.style.layoutAxis).(growS); ok {
-			child.axisSizeSet(el.style.layoutAxis, child.axisSize(el.style.layoutAxis)+uint16(float64(left)*float64(g.factor)/float64(line.TotalFactor)))
+	for _, child := range node.Children {
+		if g, ok := child.Style.axisSize(node.Style.LayoutAxis).(growS); ok && totalFactor > 0 {
+			growSize := uint16(float64(leftAvailable) * float64(g.factor) / float64(totalFactor))
+			child.setAxisSize(node.Style.LayoutAxis, child.axisSize(node.Style.LayoutAxis)+growSize)
 		}
 	}
 
-	for _, child := range el.Children() {
-		grow(child)
-	}
-}
+	// grow cross
+	crossPadding := node.Style.crossAxisPadding()
+	crossPadTotal := crossPadding.start + crossPadding.end
 
-func sizeCross(el *Element) {
-	for _, child := range el.Children() {
-		sizeCross(child)
+	var crossLeft uint16 = 0
+	if node.crossAxisSize() > crossPadTotal {
+		crossLeft = node.crossAxisSize() - crossPadTotal
 	}
-	padding := el.style.crossAxisPadding()
-	gap := el.style.crossAxisGap()
-	size := padding.start + padding.end
 
-	var maxLineSize uint16 = 0
-	var line uint16 = 0
-	for _, child := range el.Children() {
-		if child.layout.Line != line {
-			line += 1
-			size += maxLineSize + gap
-			maxLineSize = 0
+	for _, child := range node.Children {
+		if _, ok := child.Style.axisSize(node.Style.oppositeAxis()).(growS); ok {
+			child.setAxisSize(node.Style.oppositeAxis(), crossLeft)
 		}
-		maxLineSize = max(maxLineSize, child.axisSize(el.style.oppositeAxis()))
 	}
-	size += maxLineSize
 
-	if crossFitSize, ok := el.style.crossAxisSize().(fixedS); ok {
-		el.crossAxisSet(crossFitSize.Size)
-	} else {
-		el.crossAxisSet(size)
+	for _, child := range node.Children {
+		flex(child)
 	}
 }
 
-func sizeLayout(el *Element) {
-	//DFS postordre
-	for _, child := range el.Children() {
-		sizeLayout(child)
-	}
-	// Since there is 3 modes FIXED/FIT/GROW check that if the mode is FIXED we discard the work and set the fix sizeLayout
-	if crossSize, ok := el.style.crossAxisSize().(fixedS); ok {
-		el.crossAxisSet(crossSize.Size)
+func justify(j JustifyT, available uint16, count uint16) (offset uint16, gap uint16) {
+	if count == 0 {
+		return 0, 0
 	}
 
-	if layoutSize, ok := el.style.layoutAxisSize().(fixedS); ok {
-		el.layoutAxisSet(layoutSize.Size)
-		return
+	switch j {
+	case JustifyCenter:
+		return available / 2, 0
+	case JustifyEnd:
+		return available, 0
+	case JustifyBetween:
+		if count == 1 {
+			return 0, 0
+		}
+
+		return 0, available / (count - 1)
+	case JustifyAround:
+		g := available / count
+		return g / 2, g
+	default:
+		return 0, 0
 	}
-
-	// Get Padding for the layout Axis
-	padding := el.style.layoutAxisPadding()
-
-	// Init the sizeLayout for layout axis depending on the layout and add padding
-	size := padding.start + padding.end
-
-	// Iterate every child and add their sizeLayout to the main axis for this element
-	for _, child := range el.Children() {
-		size += child.axisSize(el.style.layoutAxis)
-	}
-
-	// Add the gap sizeLayout between children to the main axis sizeLayout
-	var gap uint16 = 0
-	if n := len(el.children); n > 1 {
-		gap = uint16(n-1) * el.style.layoutAxisGap()
-	}
-
-	size += gap
-	el.layoutAxisSet(size)
 }
 
-func constraint(el *Element, maxLayoutSize uint16, maxCrossSize uint16) {
-	if _, ok := el.style.layoutAxisSize().(fixedS); !ok {
-		el.layoutAxisSet(min(el.layoutAxisSize(), maxLayoutSize))
-	}
-
-	for _, child := range el.Children() {
-		layoutPadding := el.style.layoutAxisPadding()
-		crossPadding := el.style.crossAxisPadding()
-		if child.style.layoutAxis == el.style.layoutAxis {
-			constraint(child, el.layoutAxisSize()-layoutPadding.start-layoutPadding.end, maxCrossSize-crossPadding.start-crossPadding.end)
-		} else {
-			constraint(child, maxCrossSize-crossPadding.start-crossPadding.end, el.layoutAxisSize()-layoutPadding.start-layoutPadding.end)
-		}
+func align(a AlignT, available uint16) uint16 {
+	switch a {
+	case AlignCenter:
+		return available / 2
+	case AlignEnd:
+		return available
+	default:
+		return 0
 	}
 }
