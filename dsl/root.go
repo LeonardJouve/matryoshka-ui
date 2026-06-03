@@ -74,32 +74,33 @@ func position(node *Node, x uint16, y uint16) {
 	crossPadding := node.Style.crossAxisPadding()
 	crossAvailable := node.crossAxisSize() - crossPadding.start - crossPadding.end
 
-	var maxCrossSize uint16 = 0
 	for _, child := range node.Children {
 		mainAvailable -= child.axisSize(node.Style.LayoutAxis)
-		maxCrossSize = max(maxCrossSize, child.axisSize(node.Style.oppositeAxis()))
 	}
-
-	crossAvailable -= maxCrossSize
 
 	for i, child := range node.Children {
 		mainOffset, mainGap := justify(node.Style.Justify, mainAvailable, uint16(len(node.Children)))
-		if i == 0 {
-			if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
+
+		crossOffset := align(node.Style.Align, crossAvailable-child.axisSize(node.Style.oppositeAxis()))
+		var offsetX, offsetY uint16
+
+		if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
+			if i == 0 {
 				px += mainOffset
 			} else {
-				py += mainOffset
-			}
-		} else {
-			if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
 				px += mainGap
+			}
+			offsetY = crossOffset
+		} else {
+			if i == 0 {
+				py += mainOffset
 			} else {
 				py += mainGap
 			}
+			offsetX = crossOffset
 		}
-		//crossOffset := align(node.Style.Align, child.axisSize(node.axisSize(node.Style.oppositeAxis())), crossAvailable)
 
-		position(child, px, py)
+		position(child, px+offsetX, py+offsetY)
 
 		if node.Style.LayoutAxis == LAYOUT_HORIZONTAL {
 			px += child.Layout.Width
@@ -190,12 +191,12 @@ func justify(j JustifyT, available uint16, count uint16) (offset uint16, gap uin
 	}
 }
 
-func align(a AlignT, crossSize uint16, available uint16) uint16 {
+func align(a AlignT, available uint16) uint16 {
 	switch a {
 	case AlignCenter:
-		return (available - crossSize) / 2
+		return available / 2
 	case AlignEnd:
-		return available - crossSize
+		return available
 	default:
 		return 0
 	}

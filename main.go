@@ -32,13 +32,13 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 		),
 		Children(
 			Div(
-				Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fit()), Justify(JustifyCenter)),
+				Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Justify(JustifyCenter)),
 				Children(
 					// Player card
 					Div(
 						Style(
 							LayoutAxis(LAYOUT_VERTICAL),
-							Width(Fixed(300)), Height(Grow(1)),
+							Width(Fixed(300)),
 							Padding(PaddingAll(24)),
 							Gap(GapAll(16)),
 							Color(card),
@@ -61,12 +61,12 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 
 							// elapsed / duration row
 							Div(
-								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Height(Fixed(14)), Gap(GapHorizontal(10)), Justify(JustifyBetween)),
+								Style(LayoutAxis(LAYOUT_HORIZONTAL), Width(Grow(1)), Gap(GapHorizontal(10)), Justify(JustifyBetween), Align(AlignCenter)),
 								Children(
 									Text("1:24", TextStyle(Color(muted), FontSize(12))),
 									Div(
 										Style(Width(Grow(1)), Height(Grow(1)), Color(track), Padding(PaddingAll(4)), BorderRadius(0.8)),
-										Children(Div(Style(Width(Fixed(60)), Height(Grow(1)), Color(green), BorderRadius(0.8)))),
+										Children(Div(Style(Width(Fixed(60)), Height(Fixed(8)), Color(green), BorderRadius(0.8)))),
 									),
 									Text("4:03", TextStyle(Color(muted), FontSize(12))),
 								),
