@@ -9,7 +9,7 @@ import (
 
 func col(r, g, b uint8) utils.Color { return utils.Color{Red: r, Green: g, Blue: b, Alpha: 255} }
 
-func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
+func TestUI() *Node {
 	var (
 		bg    = col(16, 18, 27)
 		card  = col(28, 31, 46)
@@ -25,7 +25,7 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 
 	return Root(Div(
 		Style(
-			Width(Fixed(w)), Height(Fixed(h)),
+			Width(Grow(1)), Height(Grow(1)),
 			LayoutAxis(LAYOUT_VERTICAL),
 			Color(bg),
 			Justify(JustifyCenter),
@@ -92,7 +92,7 @@ func TestUI(w uint16, h uint16, measurer TextMeasurer) *Node {
 				),
 			),
 		),
-	), measurer)
+	))
 }
 
 func main() {
@@ -102,9 +102,8 @@ func main() {
 	//renderer := renderer.NewTerminalRenderer()
 
 	renderer.InitWindow(width, height, "Testing101")
-	renderer.SetWindowFlag(rl.FlagWindowResizable)
+	renderer.SetWindowFlag(rl.FlagWindowResizable | rl.FlagWindowHighdpi)
 	defer renderer.CloseWindow()
 
-	renderer.Render(TestUI(uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer))
-	//renderer.Render(TestUI(width, height, renderer))
+	renderer.Render(TestUI())
 }

@@ -17,7 +17,7 @@ type Line struct {
 type Node struct {
 	Kind   Kind
 	Style  *StyleS
-	Layout Layout
+	Layout LayoutT
 	lines  []Line
 
 	DivAttrs

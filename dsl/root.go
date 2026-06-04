@@ -1,7 +1,21 @@
 package dsl
 
-func Root(element Element, measurer TextMeasurer) *Node {
-	root := element.build()
+func Root(element Element) *Node {
+	root := &Node{
+		Kind:   KindDiv,
+		Style:  NewStyle(),
+		Layout: NewLayout(),
+		lines:  []Line{},
+		DivAttrs: DivAttrs{
+			Children: []*Node{element.build()},
+		},
+	}
+	return root
+}
+
+func Layout(root *Node, width uint16, height uint16, measurer TextMeasurer) *Node {
+	root.Style.Width = Fixed(width)
+	root.Style.Height = Fixed(height)
 	layoutEngine(root, measurer)
 	return root
 }

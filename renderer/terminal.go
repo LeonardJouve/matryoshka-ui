@@ -16,6 +16,8 @@ type TerminalRenderer struct {
 	// Defaults usually assume an 8x16 pixel terminal font.
 	scaleX float64
 	scaleY float64
+	width  uint16
+	height uint16
 }
 
 func NewTerminalRenderer() *TerminalRenderer {
@@ -27,6 +29,9 @@ func NewTerminalRenderer() *TerminalRenderer {
 
 // InitWindow creates and initializes the terminal screen.
 func (renderer *TerminalRenderer) InitWindow(width uint16, height uint16, name string) {
+	renderer.width = width
+	renderer.height = height
+
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create screen: %v\n", err)
@@ -87,7 +92,7 @@ func (renderer *TerminalRenderer) Render(node *dsl.Node) {
 			renderer.screen.SetStyle(bgStyle)
 			renderer.screen.Clear()
 
-			renderer.renderNode(node)
+			renderer.renderNode(dsl.Layout(node, renderer.width, renderer.height, renderer))
 
 			renderer.screen.Show()
 		}

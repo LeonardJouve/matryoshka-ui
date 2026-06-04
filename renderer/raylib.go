@@ -14,7 +14,6 @@ func NewRaylibRenderer() *RaylibRenderer {
 }
 
 func (renderer *RaylibRenderer) InitWindow(width, height uint16, name string) {
-	rl.SetConfigFlags(rl.FlagWindowHighdpi)
 	rl.InitWindow(int32(width), int32(height), name)
 }
 
@@ -26,13 +25,14 @@ func (renderer *RaylibRenderer) CloseWindow() {
 	rl.CloseWindow()
 }
 
-func (renderer *RaylibRenderer) Render(node *dsl.Node) {
+func (renderer *RaylibRenderer) Render(layout *dsl.Node) {
 	rl.SetTargetFPS(60)
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Color{R: 24, G: 24, B: 27, A: 255})
-		renderer.render(node)
+		root := dsl.Layout(layout, uint16(rl.GetScreenWidth()), uint16(rl.GetScreenHeight()), renderer)
+		renderer.render(root)
 
 		rl.EndDrawing()
 	}
