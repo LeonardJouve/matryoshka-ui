@@ -36,7 +36,6 @@ func (d *DivS) build() *Node {
 		Kind:     KindDiv,
 		Style:    d.StyleS,
 		Layout:   NewLayout(),
-		lines:    []Line{},
 		DivAttrs: DivAttrs{},
 	}
 

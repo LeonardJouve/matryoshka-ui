@@ -8,17 +8,10 @@ const (
 	KindImage
 )
 
-type Line struct {
-	items     []*Node
-	mainUsed  int
-	crossSize int
-}
-
 type Node struct {
 	Kind   Kind
 	Style  *StyleS
 	Layout LayoutT
-	lines  []Line
 
 	DivAttrs
 	ImageAttrs

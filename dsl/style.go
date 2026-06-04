@@ -27,13 +27,6 @@ const (
 	AlignEnd
 )
 
-type WrapT int
-
-const (
-	NoWrap WrapT = iota // Default
-	WrapYes
-)
-
 type StyleModifier interface{ applyStyle(*StyleS) }
 
 type StyleS struct {
@@ -46,7 +39,6 @@ type StyleS struct {
 	FontSize     uint16
 	Justify      JustifyT
 	Align        AlignT
-	Wrap         WrapT
 	BorderRadius float32
 	BorderWidth  uint16
 	BorderColor  utils.Color
@@ -87,6 +79,16 @@ func Fixed(size uint16) LayoutSize {
 }
 
 func (f fixedS) isLayoutSize() {}
+
+type percentS struct {
+	Ratio float64
+}
+
+func (p percentS) isLayoutSize() {}
+
+func Percent(percent float64) LayoutSize {
+	return percentS{Ratio: max(0, min(1, percent/100))}
+}
 
 func NewStyle() *StyleS {
 	return &StyleS{

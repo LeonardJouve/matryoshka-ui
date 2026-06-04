@@ -5,7 +5,6 @@ func Root(element Element) *Node {
 		Kind:   KindDiv,
 		Style:  NewStyle(),
 		Layout: NewLayout(),
-		lines:  []Line{},
 		DivAttrs: DivAttrs{
 			Children: []*Node{element.build()},
 		},
@@ -133,9 +132,24 @@ func position(node *Node, x uint16, y uint16) {
 }
 
 func flex(node *Node) {
+	mainPadding := node.Style.mainAxisPadding()
+	crossPadding := node.Style.crossAxisPadding()
+
+	mainInner := node.mainAxisSize() - mainPadding.start - mainPadding.end
+	crossInner := node.crossAxisSize() - crossPadding.start - crossPadding.end
+
+	// resolve percentage children against this node's inner (content-box) size
+	for _, child := range node.Children {
+		if p, ok := child.Style.axisSize(node.Style.LayoutAxis).(percentS); ok {
+			child.setAxisSize(node.Style.LayoutAxis, uint16(float64(mainInner)*p.Ratio))
+		}
+		if p, ok := child.Style.axisSize(node.Style.oppositeAxis()).(percentS); ok {
+			child.setAxisSize(node.Style.oppositeAxis(), uint16(float64(crossInner)*p.Ratio))
+		}
+	}
+
 	// grow main
 	var totalFactor uint16 = 0
-	mainPadding := node.Style.mainAxisPadding()
 	used := mainPadding.start + mainPadding.end
 
 	if n := len(node.Children); n > 1 {
@@ -162,17 +176,9 @@ func flex(node *Node) {
 	}
 
 	// grow cross
-	crossPadding := node.Style.crossAxisPadding()
-	crossPadTotal := crossPadding.start + crossPadding.end
-
-	var crossLeft uint16 = 0
-	if node.crossAxisSize() > crossPadTotal {
-		crossLeft = node.crossAxisSize() - crossPadTotal
-	}
-
 	for _, child := range node.Children {
 		if _, ok := child.Style.axisSize(node.Style.oppositeAxis()).(growS); ok {
-			child.setAxisSize(node.Style.oppositeAxis(), crossLeft)
+			child.setAxisSize(node.Style.oppositeAxis(), crossInner)
 		}
 	}
 
