@@ -301,9 +301,9 @@ Recurse over `Children`, and for each node draw according to its `Kind` and `Lay
 
 ```go
 type Renderer interface {
-InitWindow(width, height uint16, name string)
-CloseWindow()
-Render(element *dsl.Node)
+	InitWindow(width, height uint16, name string)
+	CloseWindow()
+	Render(element *dsl.Node)
 }
 ```
 
