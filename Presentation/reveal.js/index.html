@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+
+		<title>Matryoshka UI - Presentation</title>
+
+		<link rel="stylesheet" href="dist/reset.css" />
+		<link rel="stylesheet" href="dist/reveal.css" />
+		<link rel="stylesheet" href="styles.css" />
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
+		
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				
+				<!-- 1. TITLE SLIDE -->
+				<section class="section-divider" data-background-gradient="radial-gradient(circle, #1e293b 0%, #0f172a 100%)">
+					<div class="content" style="align-items: center; justify-content: center; text-align: center;">
+						<div class="node is-fitted" style="padding: 40px; border-width: 4px; margin-bottom: 30px; box-shadow: 0 0 50px rgba(39, 201, 63, 0.2);">
+							<div class="node" style="padding: 30px; border-color: var(--secondary-color); border-style: solid; border-width: 3px;">
+								<div class="node" style="padding: 20px; border-color: var(--accent-red); border-style: solid; border-width: 2px;">
+									<h1 style="margin: 0; font-size: 64pt; letter-spacing: -2px;">Matryoshka<span style="color: var(--primary-color);">UI</span></h1>
+								</div>
+							</div>
+						</div>
+						
+						<h3 class="text-uppercase" style="font-size: 18pt; color: var(--muted-color); letter-spacing: 6px; margin-top: 20px;">Projet PLM — Paradigme Déclaratif</h3>
+						
+						<div style="margin-top: 60px; width: 200px; height: 2px; background: linear-gradient(to right, transparent, var(--primary-color), transparent);"></div>
+						
+						<div style="margin-top: 30px;">
+							<p class="text-xl" style="margin: 0; font-weight: 600;">Léonard Jouve & Killian Viquerat</p>
+							<p class="text-muted" style="margin-top: 5px;">HEIG-VD — 2024</p>
+						</div>
+						
+						<div style="display: flex; gap: 15px; margin-top: 40px;">
+							<span class="tag tag-primary"><i class="fa-brands fa-golang"></i> go</span>
+							<span class="tag"><i class="fa-solid fa-gamepad"></i> raylib</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- 2. CONTEXT & MOTIVATION -->
+				<section>
+					<h2>Contexte du Projet</h2>
+					<div class="content">
+						<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-graduation-cap"></i> Cours PLM (Programming Language Multiverse)</p>
+						
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; margin-top: 20px;">
+							<div class="card">
+								<h4><i class="fa-solid fa-map-location-dot"></i> Le Cadre</h4>
+								<div class="content">
+									<ul>
+										<li>Dernière année de <strong>Bachelor</strong></li>
+										<li>Exploration de paradigmes exotiques</li>
+										<li>Objectif : Implémenter le paradigme au cœur de <strong>Go</strong></li>
+									</ul>
+								</div>
+							</div>
+							<div class="card">
+								<h4><i class="fa-solid fa-lightbulb"></i> La Problématique</h4>
+								<div class="content">
+									<ul>
+										<li>Créer une bibliothèque UI via un <strong>DSL</strong></li>
+										<li>Inspiration : Moteur de layout <strong>Clay</strong></li>
+										<li>Découplage strict entre structure et rendu</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- 3. DSL & COMPONENTS -->
+				<section>
+					<section>
+						<h2>DSL</h2>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-sitemap"></i> L'interface est un arbre d'éléments immuables</p>
+							
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1;">
+								<div class="card" style="border-left: 5px solid var(--primary-color);">
+									<h4><i class="fa-solid fa-tree"></i> Trois types d'éléments</h4>
+									<ul>
+										<li><strong>Div</strong> : Conteneur de layout (enfants)</li>
+										<li><strong>Text</strong> : Chaîne de caractères</li>
+										<li><strong>Image</strong> : Asset chargé via un chemin</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-gears"></i> Philosophie Flex</h4>
+									<ul>
+										<li>Axes Principal et Transversal</li>
+										<li>Sizing, Spacing, Alignment</li>
+										<li>Construction via <code>Root(Div(...))</code></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Conteneur : Div</h3>
+						<div class="content">
+							<div class="card">
+								<h4><i class="fa-solid fa-arrows-spin"></i> Modificateurs Uniques</h4>
+								<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+									<ul>
+										<li><code>LayoutAxis</code> : Horizontal / Vertical</li>
+										<li><code>Padding</code> : Inner spacing</li>
+										<li><code>Gap</code> : Spacing entre enfants</li>
+									</ul>
+									<ul>
+										<li><code>Justify</code> & <code>Align</code> : Flexbox logic</li>
+										<li><code>BorderRadius</code> : 0..1 (Corner radius)</li>
+										<li><code>BorderWidth/Color</code> : Bordures</li>
+									</ul>
+								</div>
+							</div>
+							<div class="code-block" style="font-size: 11pt; margin-top: 30px;">
+								<code>Div(Children(...), Style(LayoutAxis(LAYOUT_VERTICAL), GapAll(10)))</code>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Feuille : Text</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+								<div class="card">
+									<h4><i class="fa-solid fa-font"></i> Modificateurs Text</h4>
+									<ul>
+										<li><code>FontSize(uint16)</code> : Taille de la police (défaut: 16)</li>
+										<li><code>Color(utils.Color)</code> : Définit la couleur du texte (spécifique à Text)</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-code"></i> Usage</h4>
+									<pre style="box-shadow: none; background: transparent;"><code class="language-go" style="font-size: 11pt;">Text("Hello World",
+  TextStyle(
+    FontSize(24),
+    Color(utils.RED),
+  ),
+)</code></pre>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Feuille : Image</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+								<div class="card">
+									<h4><i class="fa-solid fa-image"></i> Modificateurs Image</h4>
+									<ul>
+										<li><code>Width</code> & <code>Height</code> : Sizing de l'asset</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-code"></i> Usage</h4>
+									<pre style="box-shadow: none; background: transparent;"><code class="language-go" style="font-size: 11pt;">Image("assets/logo.png",
+  ImageStyle(
+    Width(Fixed(100)),
+    Height(Fixed(100)),
+  ),
+)</code></pre>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Sizing : LayoutSize</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+								<div class="card">
+									<h4><i class="fa-solid fa-arrow-up-wide-short"></i> Bottom-Up (Sizing)</h4>
+									<ul>
+										<li><code>Fit()</code> : Taille du contenu (défaut)</li>
+										<li><code>Fixed(size)</code> : Taille absolue en pixels</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-arrow-down-wide-short"></i> Top-Down (Flex)</h4>
+									<ul>
+										<li><code>Grow(factor)</code> : Remplit l'espace restant</li>
+										<li><code>Percent(%)</code> : % de la taille du parent</li>
+									</ul>
+								</div>
+							</div>
+							<div class="card" style="margin-top: 20px; border-left: 5px solid var(--secondary-color);">
+								<h4><i class="fa-solid fa-triangle-exclamation"></i> Attention sur Percent</h4>
+								<p><code>Percent</code> est résolu <strong>après</strong> le parent. Il s'effondre à 0 dans un parent <code>Fit()</code>. À utiliser uniquement dans des parents <code>Fixed</code>, <code>Grow</code> ou <code>Percent</code> résolus.</p>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Exemple Complet</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: stretch;">
+								<div style="display: flex; flex-direction: column;">
+									<p class="text-muted" style="margin-bottom: 10px;"><i class="fa-solid fa-code"></i> Syntaxe Déclarative</p>
+									<div class="card" style="padding: 15px; background: rgba(0,0,0,0.3); flex: 1; display: flex; align-items: center;">
+										<pre style="box-shadow: none; margin: 0; width: 100%;"><code class="language-go" data-trim data-noescape style="border-radius: 12px; font-size: 11pt; background: transparent;">
+											Root(
+												Div(
+													Children(
+														Text("Raylib",
+															TextStyle(FontSize(32), Color(utils.WHITE))
+														),
+														Image("raylib.png",
+															ImageStyle(Width(Fixed(300)), Height(Fixed(300)))
+														),
+													),
+													Style(
+														LayoutAxis(LAYOUT_VERTICAL),
+														Width(Grow(1)), Height(Grow(1)),
+														Justify(JustifyCenter),
+														Align(AlignCenter),
+													),
+												),
+											)
+										</code></pre>
+									</div>
+								</div>
+								<div style="display: flex; flex-direction: column; text-align: center;">
+									<p class="text-muted" style="margin-bottom: 10px;"><i class="fa-solid fa-desktop"></i> Rendu Final (Raylib)</p>
+									<div style="flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--line-color);">
+										<img src="./assets/raylib.png" alt="Raylib Output" style="border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); max-height: 350px;">
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- 4. LAYOUT ENGINE (ANIMATED) -->
+				<section>
+					<section>
+						<h2>Layout Engine</h2>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-gears"></i> L'algorithme de résolution en 3 phases</p>
+							<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 30px;">
+								<div class="card"><h4 class="text-center">1. Sizing</h4><p class="text-center">Bottom-Up : Mesure des tailles intrinsèques (Fit/Fixed).</p></div>
+								<div class="card"><h4 class="text-center">2. Grow</h4><p class="text-center">Top-Down : Distribution de l'espace (Flex/Percent).</p></div>
+								<div class="card"><h4 class="text-center">3. Position</h4><p class="text-center">Final Pass : Calcul des coordonnées (x, y) finales.</p></div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Phase 1: Sizing (Bottom-Up) -->
+					<section data-auto-animate>
+						<h3>Phase 1 : Sizing (Bottom-Up)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>1. Mesure des feuilles</strong> : Calcul des dimensions intrinsèques</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
+								<!-- Only Leaves are visible -->
+								<div style="display: flex; gap: 20px;">
+									<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); color: white; flex-direction: column;">
+										<i class="fa-solid fa-font"></i> <small>140x100</small>
+									</div>
+									<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color); color: white; flex-direction: column;">
+										<i class="fa-solid fa-image"></i> <small>100x140</small>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section data-auto-animate>
+						<h3>Phase 1 : Sizing (Bottom-Up)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>2. Agrégation</strong> : Le parent s'adapte à ses enfants (Fit)</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
+								<!-- Parent appears and wraps children -->
+								<div data-id="s-parent" class="node is-fitted" style="width: 300px; height: 200px; padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
+									<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); margin: 10px;"></div>
+									<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color); margin: 10px;"></div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section data-auto-animate>
+						<h3>Phase 1 : Sizing (Bottom-Up)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>3. Propagation</strong> : La racine finalise l'arbre</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
+								<!-- Root appears and wraps everything -->
+								<div data-id="s-root" class="node is-fitted" style="width: 420px; height: 320px; padding: 40px; border-color: var(--primary-color); border-width: 6px;">
+									<div data-id="s-parent" class="node is-fitted" style="width: 300px; height: 200px; padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
+										<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); margin: 10px;"></div>
+										<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color); margin: 10px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Phase 2: Grow -->
+					<section data-auto-animate>
+						<h3>Phase 2 : Grow (Top-Down)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> Espace restant identifié dans le parent</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.2);">
+								<div data-id="p2-parent" class="node" style="width: 600px; height: 250px; padding: 20px; display: flex; justify-content: flex-start; align-items: stretch;">
+									<div data-id="p2-c1" style="width: 100px; background: var(--accent-red); margin: 10px; border-radius: 4px;"></div>
+									<div data-id="p2-grow" style="width: 100px; background: var(--primary-color); margin: 10px; border-radius: 4px; border: 2px dashed white; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-arrows-left-right"></i></div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section data-auto-animate>
+						<h3>Phase 2 : Grow (Top-Down)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> Le nœud <code>Grow(1)</code> remplit l'espace disponible</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.2);">
+								<div data-id="p2-parent" class="node" style="width: 600px; height: 250px; padding: 20px; display: flex; justify-content: flex-start; align-items: stretch;">
+									<div data-id="p2-c1" style="width: 100px; background: var(--accent-red); margin: 10px; border-radius: 4px;"></div>
+									<div data-id="p2-grow" style="width: 440px; background: var(--primary-color); margin: 10px; border-radius: 4px; border: none;"></div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Phase 3: Position -->
+					<section data-auto-animate>
+						<h3>Phase 3 : Position (Final Pass)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> Tailles résolues, alignement initial (Start)</p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.2);">
+								<div data-id="p3-parent" class="node" style="width: 600px; height: 250px; padding: 20px; display: flex; justify-content: flex-start; align-items: center;">
+									<div data-id="p3-c1" style="width: 80px; height: 80px; background: var(--accent-red); margin: 0; border-radius: 4px;"></div>
+									<div data-id="p3-c2" style="width: 80px; height: 80px; background: var(--secondary-color); margin: 0; border-radius: 4px;"></div>
+									<div data-id="p3-c3" style="width: 80px; height: 80px; background: var(--primary-color); margin: 0; border-radius: 4px;"></div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section data-auto-animate>
+						<h3>Phase 3 : Position (Final Pass)</h3>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> Application du <code>JustifyCenter</code> et des <code>Gaps</code></p>
+							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.2);">
+								<div data-id="p3-parent" class="node" style="width: 600px; height: 250px; padding: 20px; display: flex; justify-content: center; align-items: center; gap: 40px;">
+									<div data-id="p3-c1" style="width: 80px; height: 80px; background: var(--accent-red); margin: 0; border-radius: 4px;"></div>
+									<div data-id="p3-c2" style="width: 80px; height: 80px; background: var(--secondary-color); margin: 0; border-radius: 4px;"></div>
+									<div data-id="p3-c3" style="width: 80px; height: 80px; background: var(--primary-color); margin: 0; border-radius: 4px;"></div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Défis Techniques</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+								<div class="card">
+									<h4><i class="fa-solid fa-diagram-project"></i> Séparation en Phases</h4>
+									<p>Maintenir des phases de calcul (Sizing vs Flex) strictement isolées malgré les <strong>dépendances croisées</strong> entre parents et enfants.</p>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-link-slash"></i> Conflit de Résolution</h4>
+									<p>Gérer les éléments dont la taille dépend du parent (Percent/Grow) sans briser l'algorithme récursif de remontée des tailles (Fit).</p>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Limitation : Div Wrapping</h3>
+						<div class="content">
+							<div class="card" style="border-left: 5px solid var(--accent-red);">
+								<h4><i class="fa-solid fa-turn-down"></i> Le problème du Wrapping</h4>
+								<p class="text-lg">L'implémentation du <strong>wrapping des enfants</strong> dans les conteneurs (similaire au <code>flex-wrap</code>) pose des défis majeurs :</p>
+								<ul style="margin-top: 15px;">
+									<li><strong>Multi-Lignes</strong> : La hauteur totale du parent devient dépendante de la largeur résolue et du nombre de lignes créées.</li>
+									<li><strong>Phases Croisées</strong> : Le calcul de la position impacte le calcul de la taille, brisant la séparation stricte des phases.</li>
+								</ul>
+							</div>
+							<div class="card" style="margin-top: 20px;">
+								<p><i class="fa-solid fa-clock"></i> <strong>Verdict :</strong> Garantir un rendu sans bug avec du wrapping demandait une complexité algorithmique (gestion des overflows, alignement par ligne) impossible à stabiliser dans le temps imparti.</p>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- 5. RENDERER -->
+				<section>
+					<section>
+						<h2>Architecture Renderer</h2>
+						<div class="content">
+							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-microchip"></i> Indépendance totale vis-à-vis de l'affichage</p>
+							
+							<div class="card" style="border-left: 5px solid var(--primary-color); margin-bottom: 20px;">
+								<h4><i class="fa-solid fa-compass-drafting"></i> Le Concept : Renderer Agnostic</h4>
+								<p class="text-lg">Le moteur de layout produit des coordonnées (x, y, w, h). N'importe quelle technologie peut ensuite les dessiner.</p>
+							</div>
+							
+							<div class="code-block">
+								<pre style="margin:0; box-shadow: none;"><code class="language-go" style="background: transparent;">type Renderer interface {
+  InitWindow(width, height int, title string)
+  Render(element *dsl.Node)
+  CloseWindow()
+}</code></pre>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Implémentations</h3>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+								<div class="card">
+									<h4><i class="fa-solid fa-gamepad"></i> Raylib</h4>
+									<ul>
+										<li>Fenêtre native OpenGL</li>
+										<li>Performances élevées</li>
+										<li>Support des polices et images</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-terminal"></i> TUI (Terminal)</h4>
+									<ul>
+										<li>Via la librairie <code>TCell</code></li>
+										<li>Rendu en caractères ASCII</li>
+										<li>Contraintes de résolution</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- 6. DEMO & CONCLUSION -->
+				<section class="section-divider" data-background-color="var(--primary-color)">
+					<div class="content" style="align-items: center; justify-content: center;">
+						<h1 style="color: var(--background-color); font-size: 56pt;"><i class="fa-solid fa-display"></i> Démonstration</h1>
+						<p style="color: rgba(15, 23, 42, 0.7); font-weight: 600;" class="text-2xl">Aperçu en direct : Raylib & Terminal</p>
+					</div>
+				</section>
+
+				<section>
+					<section>
+						<h2>Retour d'expérience</h2>
+						<div class="content">
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+								<div class="card">
+									<h4><i class="fa-brands fa-golang"></i> Le langage Go</h4>
+									<ul>
+										<li>Simplicité de la syntaxe</li>
+										<li>Facilité d'interfaçage (CGO pour Raylib)</li>
+										<li>Gestion efficace des types</li>
+									</ul>
+								</div>
+								<div class="card">
+									<h4><i class="fa-solid fa-diagram-project"></i> Le Déclaratif</h4>
+									<ul>
+										<li>API intuitive pour l'utilisateur</li>
+										<li>Complexité reportée sur la lib</li>
+										<li>Rigueur mathématique du layout</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h2>Conclusion</h2>
+						<div class="content">
+							<div class="card" style="text-align: center; justify-content: center; align-items: center;">
+								<p class="text-2xl" style="margin-bottom: 30px; max-width: 800px;">Un projet qui nous a permis de comprendre les entrailles des <strong>frameworks modernes</strong>.</p>
+								<div style="display: flex; justify-content: center; gap: 20px;">
+									<span class="tag tag-primary"><i class="fa-solid fa-sitemap"></i> Structure</span>
+									<span class="tag tag-primary"><i class="fa-solid fa-calculator"></i> Algorithmique</span>
+									<span class="tag tag-primary"><i class="fa-solid fa-abstract"></i> Abstraction</span>
+								</div>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section class="section-divider">
+					<div class="content" style="align-items: center; justify-content: center;">
+						<h2>Questions ?</h2>
+						<div class="node is-fitted" style="padding: 30px; border-width: 4px; display: inline-flex; margin-top: 30px;">
+							<h1 style="margin: 0; font-size: 48pt;">Merci ! <i class="fa-solid fa-heart" style="color: var(--accent-red);"></i></h1>
+						</div>
+						<p class="text-muted" style="margin-top: 40px;">Retrouvez le projet sur GitHub</p>
+					</div>
+				</section>
+
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="dist/plugin/notes.js"></script>
+		<script src="dist/plugin/markdown.js"></script>
+		<script src="dist/plugin/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				slideNumber: 'c/t',
+				transition: 'slide',
+				center: false,
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+				autoAnimateEasing: 'ease-in-out',
+				autoAnimateDuration: 0.8
+			});
+		</script>
+	</body>
+</html>
