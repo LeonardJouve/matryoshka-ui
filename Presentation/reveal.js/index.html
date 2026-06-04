@@ -267,7 +267,7 @@
 							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>1. Mesure des feuilles</strong> : Calcul des dimensions intrinsèques</p>
 							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
 								<!-- Only Leaves are visible -->
-								<div style="display: flex; gap: 20px;">
+								<div style="padding: 20px; display: flex; gap: 20px;display: flex; align-items: center;justify-content: center; ">
 									<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); color: white; flex-direction: column;">
 										<i class="fa-solid fa-font"></i> <small>140x100</small>
 									</div>
@@ -285,9 +285,9 @@
 							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>2. Agrégation</strong> : Le parent s'adapte à ses enfants (Fit)</p>
 							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
 								<!-- Parent appears and wraps children -->
-								<div data-id="s-parent" class="node is-fitted" style="width: 300px; height: 200px; padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
-									<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); margin: 10px;"></div>
-									<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color); margin: 10px;"></div>
+								<div data-id="s-parent" class="node is-fitted" style="gap: 20px;padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
+									<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red);"></div>
+									<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color);"></div>
 								</div>
 							</div>
 						</div>
@@ -299,10 +299,10 @@
 							<p class="text-muted" style="margin-top: -10px;"><i class="fa-solid fa-play"></i> <strong>3. Propagation</strong> : La racine finalise l'arbre</p>
 							<div style="display: flex; justify-content: center; align-items: center; flex: 1; border: 1px dashed var(--line-color); border-radius: 12px; background: rgba(0,0,0,0.1);">
 								<!-- Root appears and wraps everything -->
-								<div data-id="s-root" class="node is-fitted" style="width: 420px; height: 320px; padding: 40px; border-color: var(--primary-color); border-width: 6px;">
-									<div data-id="s-parent" class="node is-fitted" style="width: 300px; height: 200px; padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
-										<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red); margin: 10px;"></div>
-										<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color); margin: 10px;"></div>
+								<div data-id="s-root" class="node is-fitted" style="padding: 20px; border-color: var(--primary-color); border-width: 6px;">
+									<div data-id="s-parent" class="node is-fitted" style="gap: 20px;padding: 20px; display: flex; align-items: center; border-color: var(--secondary-color); border-width: 4px;">
+										<div data-id="s-c1" class="node is-fitted" style="width: 140px; height: 100px; background: var(--accent-red);"></div>
+										<div data-id="s-c2" class="node is-fitted" style="width: 100px; height: 140px; background: var(--secondary-color);"></div>
 									</div>
 								</div>
 							</div>
