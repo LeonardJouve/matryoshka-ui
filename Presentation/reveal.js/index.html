@@ -63,7 +63,7 @@
 									<ul>
 										<li>Dernière année de <strong>Bachelor</strong></li>
 										<li>Exploration de paradigmes exotiques</li>
-										<li>Objectif : Implémenter le paradigme au cœur de <strong>Go</strong></li>
+										<li>Objectif : Exposer le paradigme déclaratif via une libraire en <strong>Go</strong></li>
 									</ul>
 								</div>
 							</div>
@@ -412,11 +412,13 @@
 							</div>
 							
 							<div class="code-block">
-								<pre style="margin:0; box-shadow: none;"><code class="language-go" style="background: transparent;">type Renderer interface {
-  InitWindow(width, height int, title string)
-  Render(element *dsl.Node)
-  CloseWindow()
-}</code></pre>
+								<pre style="margin:0; box-shadow: none;"><code class="language-go" style="background: transparent;">
+type Renderer interface {
+	InitWindow(width, height int, title string)
+	Render(element *dsl.Node)
+	CloseWindow()
+}
+								</code></pre>
 							</div>
 						</div>
 					</section>
@@ -447,34 +449,40 @@
 				</section>
 
 				<!-- 6. DEMO & CONCLUSION -->
-				<section class="section-divider" data-background-color="var(--primary-color)">
+				<section class="section-divider">
 					<div class="content" style="align-items: center; justify-content: center;">
-						<h1 style="color: var(--background-color); font-size: 56pt;"><i class="fa-solid fa-display"></i> Démonstration</h1>
-						<p style="color: rgba(15, 23, 42, 0.7); font-weight: 600;" class="text-2xl">Aperçu en direct : Raylib & Terminal</p>
+						<h1 style="color: var(--primary-color); font-size: 56pt;"><i class="fa-solid fa-display"></i> Démonstration</h1>
+						<p style="color: var(--secondary-color); font-weight: 600;" class="text-2xl">Aperçu en direct : Raylib & Terminal</p>
 					</div>
 				</section>
 
 				<section>
 					<section>
-						<h2>Retour d'expérience</h2>
+						<h2>Retour d'expérience : Paradigme</h2>
 						<div class="content">
-							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-								<div class="card">
-									<h4><i class="fa-brands fa-golang"></i> Le langage Go</h4>
-									<ul>
-										<li>Simplicité de la syntaxe</li>
-										<li>Facilité d'interfaçage (CGO pour Raylib)</li>
-										<li>Gestion efficace des types</li>
-									</ul>
-								</div>
-								<div class="card">
-									<h4><i class="fa-solid fa-diagram-project"></i> Le Déclaratif</h4>
-									<ul>
-										<li>API intuitive pour l'utilisateur</li>
-										<li>Complexité reportée sur la lib</li>
-										<li>Rigueur mathématique du layout</li>
-									</ul>
-								</div>
+							<div class="card" style="border-left: 5px solid var(--primary-color);">
+								<h4><i class="fa-solid fa-diagram-project"></i> Paradigme Déclaratif</h4>
+								<ul style="line-height: 1.5;">
+									<li><strong>Abstraction du résultat</strong> : Interface intuitive décrivant le "quoi" plutôt que le "comment".</li>
+									<li><strong>Équilibre API/DSL</strong> : Point clé entre la fidélité au domaine métier et la faisabilité technique de la résolution.</li>
+									<li><strong>Design restrictif</strong> : Importance de concevoir une interface empêchant les états impossibles ou incohérents.</li>
+									<li><strong>Anticipation architecturale</strong> : Blocages rencontrés lors de l'ajout du texte et des images par manque de vision globale initiale.</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h2>Retour d'expérience : Go</h2>
+						<div class="content">
+							<div class="card" style="border-left: 5px solid var(--secondary-color);">
+								<h4><i class="fa-brands fa-golang"></i> Le Langage Go</h4>
+								<ul style="line-height: 1.5;">
+									<li><strong>Apprentissage</strong> : Choix délibéré pour approfondir nos connaissances malgré le manque de maîtrise initiale.</li>
+									<li><strong>Simplicité paradoxale</strong> : Le minimalisme (25 mots-clés) facilite l'immersion mais exige une rigueur accrue dans la structure.</li>
+									<li><strong>Composition vs Héritage</strong> : Nécessité de repenser les Design Patterns classiques (ex: styles communs) au profit de la composition.</li>
+									<li><strong>Liberté d'implémentation</strong> : Absence de restrictions imposées par le langage sur la création de notre propre paradigme.</li>
+								</ul>
 							</div>
 						</div>
 					</section>
@@ -482,13 +490,13 @@
 					<section>
 						<h2>Conclusion</h2>
 						<div class="content">
-							<div class="card" style="text-align: center; justify-content: center; align-items: center;">
-								<p class="text-2xl" style="margin-bottom: 30px; max-width: 800px;">Un projet qui nous a permis de comprendre les entrailles des <strong>frameworks modernes</strong>.</p>
-								<div style="display: flex; justify-content: center; gap: 20px;">
-									<span class="tag tag-primary"><i class="fa-solid fa-sitemap"></i> Structure</span>
-									<span class="tag tag-primary"><i class="fa-solid fa-calculator"></i> Algorithmique</span>
-									<span class="tag tag-primary"><i class="fa-solid fa-abstract"></i> Abstraction</span>
-								</div>
+							<div class="card" style="border-left: 5px solid var(--primary-color);">
+								<ul style="line-height: 1.6;">
+									<li><strong>Complexité sous-estimée</strong> : Ambitions peut-être trop optimistes face aux défis d'un moteur de mise en page.</li>
+									<li><strong>Courbe d'apprentissage</strong> : Le choix d'un nouveau langage (Go) a complexifié le développement initial.</li>
+									<li><strong>Défis Techniques</strong> : Difficultés majeures avec la gestion des <em>overflows</em> et le débogage algorithmique.</li>
+									<li><strong>Bilan Positif</strong> : Expérience riche en architecture, choix d'implémentation et conception d'interfaces déclaratives.</li>
+								</ul>
 							</div>
 						</div>
 					</section>
